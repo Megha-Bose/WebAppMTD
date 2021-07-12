@@ -1,0 +1,56 @@
+\section{Case 3}
+In this section, we consider a scenario where we have minimal information. We assume that we only know about our configurations and we know nothing about their vulnerabilities or the various attacker types that may be looking to attack. 
+
+In order to develop an online policy for this case, we use a similar approach except that instead of maintaining a reward estimate for every exploit, we maintain a reward estimate for every configuration. The rest of the algorithm works very similarly. 
+
+% \begin{algorithm}
+% \DontPrintSemicolon
+% $K_r(v_t) = M$\;
+% \For{\(k = 1, 2, \dots, M\)}{
+%     Follow the FPL step in the previous algorithm to produce \(\tilde{v}\) as a simulation of \(v_t\)\;
+%     \uIf{$\tilde{v} = v_t$}{
+%         $K_r(v_t) = \min(K_r(v_t), k)$\;
+%     }
+% }
+% %\ForAll{}
+% \caption{GR-Lite}
+% \label{alg:gr-switch}
+% \end{algorithm}
+
+
+\begin{algorithm}
+\DontPrintSemicolon
+$\hat{r}_{c} = 0 \quad \forall c \in \cal C$\;
+$\hat{s}_{c, c'} = 0 \quad \forall c, c' \in C$\;
+\For{$t = 1,2,\dots, T$}{
+    Sample $flag \in \{0,1\}$ such that $flag = 0$ with prob $\gamma$\;
+    \uIf{$flag==0$}{
+        Let $v_t$ be a randomly sampled configuration\;
+    }
+    \Else{
+        Draw $z_{c} \gets exp(\eta)$ independently for $c \in \cal C$\;
+        Let $v_t = \max_{c \in C} e^{-g(c)} \hat{r}_c - \hat{s}_{v_{t-1}, c} - z_c$\;
+    }
+    Adversary plays $a_t$, you play $v_t$ and get a reward $r_t(v_t)$ and incur a switching cost $s(v_{t-1}, v_t)$\;
+    Run GR-Switch to estimate $\frac{1}{p(v_t/ v_{t-1})}$ as $K_s(v_{t-1}, v_t)$;
+    
+    Update $\hat{r}_{v_t} = \hat{r}_{v_t} + K_s(v_{t-1}, v_t)r_t(v_t)$\;
+    
+    Update $\hat{s}_{v_{t-1}, v_t} = \hat{s}_{v_{t}, v_{t-1}} = \hat{s}_{v_{t-1}, v_t} + K_s(v_{t-1}, v_t) s(v_{t-1}, v_t)$\;
+}
+\caption{FPL-MTD-Lite}
+\label{alg:fpl-mtd-lite}
+\end{algorithm}
+
+\if 0
+We maintain an estimate of the reward from each configuration and deploy the configuration with maximum expected reward subject to switching costs when the configuration changes and a damping factor when the configuration remains the same. The dampening factor and the switching cost estimates have been defined earlier in section \ref{sec:case1}. Our update rule, however, changes slightly. To update our reward estimates $\hat{r}$, we use the following equation:
+
+\begin{align*}
+    \hat{r}_{c} = \hat{r}_c + r_t(v_t)\frac{\mathbb{I}\{v_t\}}{p(v_t)}
+\end{align*}
+
+
+The reasoning is the same and we use geometric resampling to compute $p(v_t)$ just like Algorithm \ref{alg:fpl-mtd}.
+
+Since $v_t$ is computed using all prior strategies, $p(v_t)$ is equivalent to that of $p(v_t/v_{t-1})$ and so we can use Algorithm \ref{alg:gr-switch} to estimate it.
+\fi

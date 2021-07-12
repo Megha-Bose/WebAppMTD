@@ -1,0 +1,84 @@
+%%% -*-BibTeX-*-
+%%% Do NOT edit. File created by BibTeX with style
+%%% ACM-Reference-Format-Journals [18-Jan-2012].
+
+\begin{thebibliography}{00}
+
+%%% ====================================================================
+%%% NOTE TO THE USER: you can override these defaults by providing
+%%% customized versions of any of these macros before the \bibliography
+%%% command.  Each of them MUST provide its own final punctuation,
+%%% except for \shownote{}, \showDOI{}, and \showURL{}.  The latter two
+%%% do not use final punctuation, in order to avoid confusing it with
+%%% the Web address.
+%%%
+%%% To suppress output of a particular field, define its macro to expand
+%%% to an empty string, or better, \unskip, like this:
+%%%
+%%% \newcommand{\showDOI}[1]{\unskip}   % LaTeX syntax
+%%%
+%%% \def \showDOI #1{\unskip}           % plain TeX syntax
+%%%
+%%% ====================================================================
+
+\ifx \showCODEN    \undefined \def \showCODEN     #1{\unskip}     \fi
+\ifx \showDOI      \undefined \def \showDOI       #1{#1}\fi
+\ifx \showISBNx    \undefined \def \showISBNx     #1{\unskip}     \fi
+\ifx \showISBNxiii \undefined \def \showISBNxiii  #1{\unskip}     \fi
+\ifx \showISSN     \undefined \def \showISSN      #1{\unskip}     \fi
+\ifx \showLCCN     \undefined \def \showLCCN      #1{\unskip}     \fi
+\ifx \shownote     \undefined \def \shownote      #1{#1}          \fi
+\ifx \showarticletitle \undefined \def \showarticletitle #1{#1}   \fi
+\ifx \showURL      \undefined \def \showURL       {\relax}        \fi
+% The following commands are used for tagged output and should be
+% invisible to TeX
+\providecommand\bibfield[2]{#2}
+\providecommand\bibinfo[2]{#2}
+\providecommand\natexlab[1]{#1}
+\providecommand\showeprint[2][]{arXiv:#2}
+
+\bibitem[\protect\citeauthoryear{??}{sai}{2017}]%
+        {sailik2016webappmtd}
+ \bibinfo{year}{2017}\natexlab{}.
+\newblock \showarticletitle{A game theoretic approach to strategy generation
+  for moving target defense in web applications}. In \bibinfo{booktitle}{{\em
+  16th International Conference on Autonomous Agents and Multiagent Systems,
+  AAMAS 2017}}. \bibinfo{publisher}{International Foundation for Autonomous
+  Agents and Multiagent Systems (IFAAMAS)}, \bibinfo{pages}{178--186}.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Neu and Bart{\'o}k}{Neu and
+  Bart{\'o}k}{2013}]%
+        {neuandbartok2013fpl}
+\bibfield{author}{\bibinfo{person}{Gergely Neu} {and}
+  \bibinfo{person}{G{\'a}bor Bart{\'o}k}.} \bibinfo{year}{2013}\natexlab{}.
+\newblock \showarticletitle{An Efficient Algorithm for Learning with
+  Semi-bandit Feedback}. In \bibinfo{booktitle}{{\em ALT}}.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Sengupta and Kambhampati}{Sengupta and
+  Kambhampati}{2020}]%
+        {sengupta2020bsmg}
+\bibfield{author}{\bibinfo{person}{Sailik Sengupta} {and}
+  \bibinfo{person}{Subbarao Kambhampati}.} \bibinfo{year}{2020}\natexlab{}.
+\newblock \bibinfo{title}{Multi-agent Reinforcement Learning in Bayesian
+  Stackelberg Markov Games for Adaptive Moving Target Defense}.
+\newblock   (\bibinfo{year}{2020}).
+\newblock
+\showeprint[arxiv]{cs.GT/2007.10457}
+
+
+\bibitem[\protect\citeauthoryear{Tran-Thanh, Xu, and Jennings}{Tran-Thanh
+  et~al\mbox{.}}{2016}]%
+        {long2016fplue}
+\bibfield{author}{\bibinfo{person}{Long Tran-Thanh}, \bibinfo{person}{Haifeng
+  Xu}, {and} \bibinfo{person}{Nicholas Jennings}.}
+  \bibinfo{year}{2016}\natexlab{}.
+\newblock \showarticletitle{Playing repeated security games with no prior
+  knowledge}.
+\newblock
+
+
+\end{thebibliography}

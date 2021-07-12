@@ -1,0 +1,430 @@
+%%
+%% sample document for AAMAS'19 conference
+%%
+%% modified from sample-sigconf.tex
+%%
+%% see ACM instructions acmguide.pdf
+%%
+%% AAMAS-specific questions? F.A.Oliehoek@tudelft.nl
+%%
+
+\documentclass[sigconf]{aamas}  % do not change this line!
+
+%% your usepackages here, for example:
+\usepackage{booktabs}
+
+%% do not change the following lines
+\usepackage{flushend}
+\usepackage{amsmath}
+\usepackage[ruled]{algorithm2e}
+\setcopyright{ifaamas}  % do not change this line!
+\acmDOI{doi}  % do not change this line!
+\acmISBN{}  % do not change this line!
+\acmConference[AAMAS'20]{Proc.\@ of the 19th International Conference on Autonomous Agents and Multiagent Systems (AAMAS 2020), B.~An, N.~Yorke-Smith, A.~El~Fallah~Seghrouchni, G.~Sukthankar (eds.)}{May 2020}{Auckland, New Zealand}  % do not change this line!
+\acmYear{2020}  % do not change this line!
+\copyrightyear{2020}  % do not change this line!
+\acmPrice{}  % do not change this line!
+
+%% the rest of your preamble here
+\newcommand{\cal}[1]{\mathcal{#1}}
+\newcommand{\norm}[1]{\left\lVert{#1}\right\rVert}
+
+
+\if 0
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{conj}[theorem]{Conjecture}
+\newtheorem{claim}[theorem]{Claim}
+\newtheorem{prop}[theorem]{Proposition}
+
+\theoremstyle{definition}
+\newtheorem{remark}[theorem]{Remark}
+
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{obs}[theorem]{Observation}
+\newtheorem{example}[theorem]{Example}
+\fi
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+\title{Moving Target Defense under Uncertainty for Web Applications}  % put your title here!
+%\titlenote{Produces the permission block, and copyright information}
+
+% AAMAS: as appropriate, uncomment one subtitle line; check the CFP
+%\subtitle{Extended Abstract}
+%\subtitle{Blue Sky Ideas Track}
+%\subtitle{JAAMAS Track}
+%\subtitle{Demonstration}
+%\subtitle{Doctoral Consortium}
+
+% AAMAS: submissions are anonymous for most tracks
+\author{Paper \#XXX}  % put your paper number here!
+
+%% example of author block for camera ready version of accepted papers: don't use for anonymous submissions
+%
+%\author{Ben Trovato}
+%\authornote{Dr.~Trovato insisted his name be first.}
+%\orcid{1234-5678-9012}
+%\affiliation{%
+%  \institution{Institute for Clarity in Documentation}
+%  \streetaddress{P.O. Box 1212}
+%  \city{Dublin} 
+%  \state{Ohio} 
+%  \postcode{43017-6221}
+%}
+%\email{trovato@corporation.com}
+%
+%\author{G.K.M. Tobin}
+%\authornote{The secretary disavows any knowledge of this author's actions.}
+%\affiliation{%
+%  \institution{Institute for Clarity in Documentation}
+%  \streetaddress{P.O. Box 1212}
+%  \city{Dublin} 
+%  \state{Ohio} 
+%  \postcode{43017-6221}
+%}
+%\email{webmaster@marysville-ohio.com}
+%
+%\author{Lars Th{\o}rv{\"a}ld}
+%\authornote{This author is the
+%  one who did all the really hard work.}
+%\affiliation{%
+%  \institution{The Th{\o}rv{\"a}ld Group}
+%  \streetaddress{1 Th{\o}rv{\"a}ld Circle}
+%  \city{Hekla} 
+%  \country{Iceland}}
+%\email{larst@affiliation.org}
+%
+%\author{Valerie B\'eranger}
+%\affiliation{%
+%  \institution{Inria Paris-Rocquencourt}
+%  \city{Rocquencourt}
+%  \country{France}
+%}
+%\author{Aparna Patel} 
+%\affiliation{%
+% \institution{Rajiv Gandhi University}
+% \streetaddress{Rono-Hills}
+% \city{Doimukh} 
+% \state{Arunachal Pradesh}
+% \country{India}}
+%\author{Huifen Chan}
+%\affiliation{%
+%  \institution{Tsinghua University}
+%  \streetaddress{30 Shuangqing Rd}
+%  \city{Haidian Qu} 
+%  \state{Beijing Shi}
+%  \country{China}
+%}
+%
+%\author{Charles Palmer}
+%\affiliation{%
+%  \institution{Palmer Research Laboratories}
+%  \streetaddress{8600 Datapoint Drive}
+%  \city{San Antonio}
+%  \state{Texas} 
+%  \postcode{78229}}
+%\email{cpalmer@prl.com}
+%
+%\author{John Smith}
+%\affiliation{\institution{The Th{\o}rv{\"a}ld Group}}
+%\email{jsmith@affiliation.org}
+%
+%\author{Julius P.~Kumquat}
+%\affiliation{\institution{The Kumquat Consortium}}
+%\email{jpkumquat@consortium.net}
+%
+%% The example's default list of authors is too long for headers
+%\renewcommand{\shortauthors}{B. Trovato et al.}
+
+\begin{abstract}  % put your abstract here!
+Moving target defense (MTD) has emerged as a technique that can be used in various applications to reduce the threat of attackers by taking away their ability to perform reconnaissance. However, a majority of the existing research in the field assumes unrealistic access to information about attacker motivations when developing MTD strategies. Many of the existing approaches also assume complete knowledge regarding the possible exploits on a particular application and how each of these exploits would affect the defender. In this work, we aim to create algorithms that generate effective moving target defense strategies that do not rely on prior knowledge. Our work assumes the only information we get is via interaction with the attacker in a repeated game setting. Since the amount of information that can be obtained through interactions may vary from application to application, we provide different algorithms that account for the different levels of information to identify optimal switching strategies. We then evaluate our algorithms using Common Vulnerabilities and Exploits mined from the National Vulnerability Database to show that our algorithms significantly outperform the state of the art.
+\end{abstract}
+
+
+\keywords{Moving Target Defense; Online Learning; Information Uncertainty}  % put your semicolon-separated keywords here!
+
+\maketitle
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% start of main body of paper
+
+\section{Introduction}\label{sec:intro}
+\textbf{Add Later}
+
+\textcolor{red}{Lets add something quick here so we get some structure}
+
+\subsection{Our Contribution}\label{subsec:contrib}
+\textbf{Add Later.}
+
+\subsection{Related Work}\label{subsec:relwork}
+\textbf{Add Later.}
+
+\section{Model and Preliminaries}\label{sec:model}
+We consider a repeated game played with two players - a defender (denoted by $\Theta$) and $\tau$ attackers (denoted by $ \Psi = \{\Psi_1, \Psi_2, \dots, \Psi_\tau\}$). At each round (or timestep) of this game, one of these attackers tries to exploit the application set up by the defender. We assume there exists a probability distribution $\cal P$ across these attacker types that determines which attacker attacks at a given time step but this distribution may not always be known to the defender. The defender has a set $\cal C = \{c_1, c_2, \dots c_n\}$ of $n$ configurations that it can deploy. Each configuration has a set of vulnerabilities $\cal V_c = \{e_1, e_2, \dots, e_{|\cal V_c|}\}$ that can be exploited. We define the set of all vulnerabilities by  $N = \bigcup_{c \in C} \cal V_c$. This vulnerability set for each configuration may not be known before hand but we assume that no configuration is perfect i.e. every configuration has some vulnerability. 
+
+At the $t$'th round, the defender chooses a configuration to deploy (denoted by $v_t \in \cal C$) and the attacker of type $f(t)$ (where $f$ is a function that maps a round to the attacker type at that round) chooses a vulnerability to exploit (denoted by $a_t$); the attacker can also choose not to exploit any vulnerability during a turn. Furthermore, we assume that there is a cost incurred when switching between configurations which may not be known a priori but remains constant throughout. The cost incurred by switching from configuration $c$ to configuration $c'$ in the $t$'th round is denoted by $s(c, c') \in (0,1]$. The game is played for $T$ rounds. 
+
+For each vulnerability $e \in N$, for each configuration $c \in \cal C$, for each attacker type $\psi \in \Psi$, we define a reward to the defender at the $t$'th round denoted by $r_t(\psi, e, c)$. The reward $r_t(\psi, e, c) \in [-1, 0)$, if an attacker successfully exploits a vulnerability that the defender's configuration has i.e. $e \in \cal V_c$ and is $0$ otherwise. Note that the different attacker types will result in the defender obtaining different utilities because of the varying attacker capabilities e.g., some attackers may not have the expertise to carry out certain attacks \citep{sailik2016webappmtd}. It is important to note that we do not require the rewards to be constant throughout; they can be stochastic or even adversarial in nature.
+
+We make no assumptions about the attacker strategy since the attacker may not be fully rational. We also do not make assumptions about the attacker utility, since these values will be hard to observe and even harder to find out beforehand. We however assume that the attacker has access to information from the previous rounds and is capable of reconnaissance.
+
+Our goal in this paper is to maximise the total utility that the defender receives, i.e.
+\begin{align*}
+    \sum_{t=1}^T r_t(\Psi_{f(t)}, a_t, v_t) - s_t(v_{t-1}, v_t)
+\end{align*}
+
+\section{Regret Lower Bounds}\label{sec:lower-bounds}
+When we only have one attacker type and the rewards at each round are adversarial, it is easy to see that this problem is very similar to the multi-armed bandit problem. This similarity allows us to use algorithms like FPL+GR[cite] or Exp3 [cite] to obtain strategies with good regret guarantees. More specifically, the algorithm minimizes the difference between the total welfare and the welfare of the best fixed strategy in hindsight. However, since the algorithms themselves do not consider switching cost, to use these algorithms, we must include the switching cost in the loss function. This gives us the following regret guarantee:
+\begin{align*}
+    \max_{v \in \cal C} & \bigg (\sum_{t=1}^T r_t(\Psi_{f(t)}, a_t, v) - s_t(v_{t-1}, v) \bigg ) \\
+    & - \bigg ( \sum_{t=1}^T r_t(\Psi_{f(t)}, a_t, v_t) - s_t(v_{t-1}, v_t) \bigg ) 
+    \le \cal O(\sqrt{T})
+\end{align*}
+
+However, as one can see and as [cite] argue, this notion of regret does not have any meaning when there are switching costs. They consider an attacker strategy which depends on all the previous configurations of the defender and define an alternate notion of regret known as policy regret. This regret takes into consideration how the attacker would have behaved if you had played a pure strategy instead and then compares the performance of the bandit algorithm to the performance of the best pure strategy in hindsight. More specifically, let $a_t$ be the attacker strategy at time $t$ which takes as input, the actions $v_1, v_2, \dots, v_{t-1}$. Then, the policy regret of an algorithm would evaluate to
+
+\begin{align*}
+    \max_{v \in \cal C} & \bigg (\sum_{t=1}^T r_t(\Psi_{f(t)}, a_t(v, v, \dots, v), v) \bigg ) \\
+    & - \bigg ( \sum_{t=1}^T r_t(\Psi_{f(t)}, a_t(v_1, v_2, \dots, v_{t-1}), v_t) - s_t(v_{t-1}, v_t) \bigg ) 
+\end{align*}
+
+[cite] show that the lower bound for policy regret is $\Omega (T)$ in the presence of an adaptive adversary. 
+
+However, in a moving target defense context, the baseline used in policy regret does not make much sense either since it is a stationary baseline. This allows the attacker to perform reconnaissance and learn the best possible strategy to inflict damage on the defender. So this baseline can have an arbitrarily bad performance. So for online learning for moving target defense, we introduce a new notion called {\em deception regret}. This combines the best of both regret notions. The baseline it compares the welfare with is the performance obtained when the defender plays the best pure strategy in hindsight assuming that the attacker has been {\em deceived} by the earlier switches of the defender. The deception regret of an algorithm is:
+\begin{align}
+    \max_{v \in \cal C} & \bigg (\sum_{t=1}^T r_t(\Psi_{f(t)}, a_t(v_1, v_2, \dots, v_{t-1}), v) \bigg ) \\
+    & - \bigg ( \sum_{t=1}^T r_t(\Psi_{f(t)}, a_t(v_1, v_2, \dots, v_{t-1}), v_t) - s_t(v_{t-1}, v_t) \bigg ) \label{eq:deception-regret}
+\end{align}
+
+Unfortunately, even when the rewards are constant, when there is only one attacker and this attacker is capable of exploiting some vulnerability in all the configurations, the deception regret is $\Omega (T)$.
+
+\begin{proposition}\label{prop:regret-lower-bound}
+When there is only one attacker, then the deception regret given by Equation \eqref{eq:deception-regret} is lower bounded by \\ $-\min_{e \in \cal V}\max_{v \in \cal C} r(\psi_1, e, v) \frac{T}{|\cal C|}$
+\end{proposition}
+\begin{proof}
+
+\end{proof}
+
+What Proposition \ref{prop:regret-lower-bound} implies is that it will be impossible to come up with an algorithm which achieves sub-linear regret. Note that any strategy has an $\cal O(T)$ regret since the maximum possible regret is $2T$. Therefore our main focus in this work is on creating scalable heuristics that have high welfare when used on real life data with realistic attacker strategies.
+
+
+\section{Case 1}\label{sec:case1}
+In this section, we consider a situation where we can observe the vulnerability being exploited as well as the attacker type trying to exploit the vulnerability. While this is similar to the model presented in \cite{sengupta2020bsmg}, our model does not observe the utility that the attacker receives.
+Note that even if we do not know the probability distribution across attacker types, it would be fairly easy to estimate it since we know which attacker type attacks at every round. To come up with a solution for this case, we use an extension of the multi armed bandits for our setting. This algorithm is described in Algorithm \ref{alg:fpl-mtd}. - This part is unclear. Is the MAB extension used to model the problem or is it solution to the problem ? Either way we should present the MAB and the extension for it and then present the algorithm. Is this new algorithm or is it an existing algorithm that we are presenting as solution here ?
+
+\begin{algorithm}
+\DontPrintSemicolon
+$K_r(a_t, v_t, \Psi_{f(t)}) = M$\;
+\For{\(k = 1, 2, \dots, M\)}{
+    Follow the FPL step in the previous algorithm to produce $\tilde{v}$ as a simulation of $v_t$\;
+    \uIf{$a_t \in \cal V_{\tilde{v}}$}{
+        $K_r(a_t, v_t, \Psi_{f(t)}) = \min(K_r(a_t, v_t, \Psi_{f(t)}), k)$\;
+    }
+}
+$K_r(a_t, v_t, \Psi_{f(t)}) = \frac{K_r(a_t, v_t, \Psi_{f(t)})}{\cal P_{\Psi_{f(t)}}}$\;
+\caption{GR-Reward}
+\label{alg:gr-reward}
+\end{algorithm}
+
+\begin{algorithm}
+\DontPrintSemicolon
+$K_s(v_{t-1}, v_t) = M$\;
+\For{\(k = 1, 2, \dots, M\)}{
+    Follow the FPL step in the previous algorithm to produce \(\tilde{v}\) as a simulation of \(v_t\)\;
+    \uIf{$\tilde{v} = v_t$}{
+        $K_s(v_{t-1}, v_t) = \min(K_s(v_{t-1}, v_t), k)$\;
+    }
+}
+\caption{GR-Switch}
+\label{alg:gr-switch}
+\end{algorithm}
+
+\begin{algorithm}
+\DontPrintSemicolon
+$\hat{r}_{e,\psi} = 0 \quad \forall e \in N, \psi \in \Psi$\;
+$\hat{s}_{c, c'} = 0 \quad \forall c, c' \in C$\;
+\For{$t = 1,2,\dots, T$}{
+    Sample $flag \in \{0,1\}$ such that $flag = 0$ with prob $\gamma$\;
+    \uIf{$flag==0$}{
+        Let $v_t$ be a randomly sampled configuration\;
+    }
+    \Else{
+        Draw $z_{e, \psi} \gets exp(\eta)$ independently for $e \in N$ and $\psi \in \Psi$\;
+        Let $u_c = \sum_{\psi \in \Psi} \min_{e \in \cal V_c} \cal P_{\psi} (\hat{r}_{e, \psi} - z_{e, \psi}) \quad \forall c \in C$\;
+        Let $v_t = \max_{c \in C} e^{-g(c)} u_c - \hat{s}_{v_{t-1}, c}$\;
+    }
+    Adversary of type $\Psi_{f(t)}$ plays $a_t$, you play $v_t$ and get a reward $r_t(a_t, v_t)$ and incur a switching cost $s(v_{t-1}, v_t)$\;
+    Run GR-Reward to estimate $\frac{1}{p(a_t \in \cal V_{v_t} \land \Psi_{f(t)})}$ as $K_r(a_t, v_t \Psi_{f(t)})$\;
+    
+    Run GR-Switch to estimate $\frac{1}{p(v_t/ v_{t-1})}$ as $K_s(v_{t-1}, v_t)$\;
+    
+    Update $\hat{r}_{a_t,\Psi_{f(t)}} = \hat{r}_{a_t,\Psi_{f(t)}} + K_r(a_t, v_t, \Psi_{f(t)})r_t(a_t, \Psi_{f(t)})$\;
+    
+    Update $\hat{s}_{v_{t-1}, v_t} = \hat{s}_{v_{t}, v_{t-1}} = \hat{s}_{v_{t-1}, v_t} + K_s(v_{t-1}, v_t) s(v_{t-1}, v_t)$\;
+}
+\caption{FPL-MTD}
+\label{alg:fpl-mtd}
+\end{algorithm}
+
+The FPL-MTD algorithm retains the essence of the FPL-UE algorithm \citep{long2016fplue} but it has a few modifications to adapt it to our setting.  
+
+We maintain a reward estimate $\hat{r}_{e, \psi}$ for each vulnerability $e$ and for each attacker type $\psi$. We also maintain a switching cost estimate $\hat{s}_{c, c'}$ for each pair of configurations. 
+
+We then use two steps to decide which configuration (denoted by $v_t$) to deploy. First we estimate the worst case reward of each configuration and denote it by $u_c$
+\begin{align*}
+    u_c = \sum_{\psi \in \Psi} \min_{e \in \cal V_c} \cal P_{\psi} (\hat{r}_{e, \psi} - z_{e, \psi}) 
+\end{align*}
+This worst case value is a weighted average of the worst case estimate of all the attacker types where the weights are the probabilities of occurrence of each type.
+
+Secondly, we use these worst case rewards to compute a strategy that maximises the worst case reward subject to a possible switching cost. We also take into consideration possible reconnaissance and penalise repeating strategies accordingly. This gives us the following assignment
+\begin{align*}
+    v_t = \max_{c \in C} e^{-g(c)} u_c - \hat{s}_{v_{t-1}, c}
+\end{align*}
+Here $g(c)$ is the dampening factor which penalises repeating configurations
+\begin{align*}
+    g(c) = 
+    \begin{cases}
+        \alpha & \text{if } c = v_{t-1} \\
+        0 & otherwise
+    \end{cases}
+\end{align*}
+
+The next step is to update the estimates of the algorithm. We update the two estimates as follows
+\begin{align*}
+    &\hat{r}_{a_t, \Psi_{f(t)}} = \hat{r}_{a_t, \Psi_{f(t)}} + r_t(a_t, \Psi_{f(t)})\frac{\mathbb{I}\{a_t \in \cal V_{v_t} \land \Psi_{f(t)}\}}{p(a_t \in \cal V_{v_t} \land \Psi_{f(t)})} \\
+    &\hat{s}_{v_{t-1}, v_t} = \hat{s}_{v_{t-1}, v_t} + s_t(v_{t-1}, v_t)\frac{\mathbb{I}\{v_t/v_{t-1}\}}{p(v_t/v_{t-1})}
+\end{align*}
+where $\mathbb{I}$ is the identity function and $p$ refers to the probability. The term $a_t \in \cal V_{v_t} \land \Psi_{f(t)}$ refers to the event where the attacker $\Psi_{f(t)}$ exploits a vulnerability of the chosen configuration and $v_t/v_{t-1}$ refers to the event where configuration $v_t$ is chosen immediately after configuration $v_{t-1}$. 
+
+Note that the terms $r_t(a_t, \Psi_{f(t)})\frac{\mathbb{I}\{a_t \in \cal V_{v_t} \land \Psi_{f(t)}\}}{p(a_t \in \cal V_{v_t} \land \Psi_{f(t)})}$ and \\ $s_t(v_{t-1}, v_t)\frac{\mathbb{I}\{v_t/v_{t-1}\}}{p(v_t/v_{t-1})}$ are unbiased estimators of $r_t(a_t, \Psi_{f(t)})$ and $s_t(v_{t-1}, v_t)$ respectively. This method is used extensively in online learning. Like prior online learning literature (see \cite{neuandbartok2013fpl}), we use geometric resampling to compute an estimate of the inverse of the above probabilities since they cannot be computed efficiently. 
+
+The intuition for geometric resampling is as follows: the number of trials required for $v_t$ to be the chosen configuration given $v_{t-1}$ is a geometric distribution with mean $\frac{1}{p(v_t/v_{t-1})}$. So we simulate the configuration process till we choose $v_t$ and the number of trials would be an unbiased estimate of $\frac{1}{p(v_t/v_{t-1})}$. This can be seen in Algorithm \ref{alg:gr-switch}.
+
+Similar logic can be applied to the reward setting as well. However, the problem with the reward setting as that we cannot simulate multiple attacker types since we do not the rewards but we can advantage of the fact that attacker type selection is an independent occurrence and we know the probabilities of an attacker type occurring i.e.
+\begin{align*}
+    p(a_t \in \cal V_{v_t} \land \Psi_{f(t)}) = p(a_t \in \cal V_{v_t}) p(\Psi_{f(t)}) 
+\end{align*}
+We know $p(\Psi_{f(t)})$ and we use geometric resampling to estimate $p(a_t \in \cal V_{v_t})$. This is described in Algorithm \ref{alg:gr-reward}.
+
+
+\section{Case 2}\label{sec:case2}
+In this section, we go one step further to assume that we know the number of types and the probability distribution across these types but we cannot observe which type carried out the attack. However, we know that the ranges of utility obtained by each attacker type has low intersection. This is motivated by the setting where attacker types are divided based on skill and the ability to cause harm. We formalise this intuition by defining a metric we call {\em degree of overlap} and then we propose algorithms for settings with low degree of overlap.
+\subsection{Degree of Overlap}\label{subsec:doo}
+Even though we do not know the utilities before hand, we assume that we know a probability distribution from where defender utilities are drawn from. The distribution for each type need not be the same and we represent this distribution by $\cal D_{\Psi_t}$ for type $\Psi_t$. From this, the degree of overlap of a security game, $DoO$ is defined by 
+\begin{align*}
+    DoO = \frac{\sum_{\Psi_i, \Psi_j \in \Psi}AreaOfIntersection(D_{\Psi_i}, D_{\Psi_j})}{^\tau C_2}
+\end{align*}
+where $\tau$ is the number of types and $AreaOfIntersection$ is the area of intersection of the two probability mass functions when you plot it on a graph. Mathematically, if $f_{D_{\Psi_i}}$ and $f_{D_{\Psi_j}}$ are two continuously distributed probability mass functions of distributions $D_{\Psi_i}$ and $D_{\Psi_j}$ respectively, then
+\begin{align*}
+    AreaOfIntersection(D_{\Psi_i}, D_{\Psi_j}) = \int \min\{f_{D_{\Psi_i}}(x), f_{D_{\Psi_j}}(x)\} \,dx
+\end{align*}
+The significance of this parameter is that a game which has a lower degree of overlap should intuitively be classified better by classification algorithm, and therefore should give better performance. A game with degree of overlap 0 should cluster perfectly and give you a performance similar to that of the partial information case (Section \ref{sec:case1}). This is the intuition we use to take our algorithm one step further to create FPL-MTD-CL (see Algorithm \ref{alg:fpl-mtd-cl}).
+FPL-MTD-CL is just like FPL-MTD (Algorithm \ref{alg:fpl-mtd}) but it uses a clustering algorithm to find out the type of the attacker which attacked. We use the exact same policy selection and parameter update rule.
+\begin{algorithm}
+\DontPrintSemicolon
+$\hat{r}_{e,\psi} = 0 \quad \forall e \in N, \psi \in \Psi$\;
+$\hat{s}_{c, c'} = 0 \quad \forall c, c' \in C$\;
+\For{$t = 1,2,\dots, T$}{
+    Sample $flag \in \{0,1\}$ such that $flag = 0$ with prob $\gamma$\;
+    \uIf{$flag==0$}{
+        Let $v_t$ be a randomly sampled configuration\;
+    }
+    \Else{
+        Draw $z_{e, \psi} \gets exp(\eta)$ independently for $e \in N$ and $\psi \in \Psi$\;
+        Let $u_c = \sum_{\psi \in \Psi} \min_{e \in \cal V_c} \cal P_{\psi} (\hat{r}_{e, \psi} - z_{e, \psi}) \quad \forall c \in C$\;
+        Let $v_t = \max_{c \in C} e^{-g(c)} u_c - \hat{s}_{v_{t-1}, c}$\;
+    }
+    Adversary plays $a_t$, you play $v_t$ and get a reward $r_t(a_t, v_t)$ and incur a switching cost $s(v_{t-1}, v_t)$\;
+    Run GR-Reward to estimate $\frac{1}{p(a_t \in \cal V_{v_t} \land \Psi_{f(t)})}$ as $K_r(a_t, v_t \Psi_{f(t)})$\;
+    Use a clustering algorithm to classify the adversary into type $\Psi_{f(t)}$ \;
+    Run GR-Switch to estimate $\frac{1}{p(v_t/ v_{t-1})}$ as $K_s(v_{t-1}, v_t)$\;
+    
+    Update $\hat{r}_{a_t,\Psi_{f(t)}} = \hat{r}_{a_t,\Psi_{f(t)}} + K_r(a_t, v_t, \Psi_{f(t)})r_t(a_t, \Psi_{f(t)})$\;
+    
+    Update $\hat{s}_{v_{t-1}, v_t} = \hat{s}_{v_{t}, v_{t-1}} = \hat{s}_{v_{t-1}, v_t} + K_s(v_{t-1}, v_t) s(v_{t-1}, v_t)$\;
+}
+\caption{FPL-MTD-CL}
+\label{alg:fpl-mtd-cl}
+\end{algorithm}
+
+Note that a low degree of overlap is a very strong assumption and may not be true in a lot of cases. In these cases, we can use Algorithm \ref{alg:fpl-mtd} but assume there is only one attacker type. 
+
+\section{Case 3}
+In this section, we consider a scenario where we have minimal information. We assume that we only know about our configurations and we know nothing about their vulnerabilities or the various attacker types that may be looking to attack. 
+
+In order to develop an online policy for this case, we use a similar approach except that instead of maintaining a reward estimate for every exploit, we maintain a reward estimate for every configuration. The rest of the algorithm works very similarly. 
+
+% \begin{algorithm}
+% \DontPrintSemicolon
+% $K_r(v_t) = M$\;
+% \For{\(k = 1, 2, \dots, M\)}{
+%     Follow the FPL step in the previous algorithm to produce \(\tilde{v}\) as a simulation of \(v_t\)\;
+%     \uIf{$\tilde{v} = v_t$}{
+%         $K_r(v_t) = \min(K_r(v_t), k)$\;
+%     }
+% }
+% %\ForAll{}
+% \caption{GR-Lite}
+% \label{alg:gr-switch}
+% \end{algorithm}
+
+
+\begin{algorithm}
+\DontPrintSemicolon
+$\hat{r}_{c} = 0 \quad \forall c \in \cal C$\;
+$\hat{s}_{c, c'} = 0 \quad \forall c, c' \in C$\;
+\For{$t = 1,2,\dots, T$}{
+    Sample $flag \in \{0,1\}$ such that $flag = 0$ with prob $\gamma$\;
+    \uIf{$flag==0$}{
+        Let $v_t$ be a randomly sampled configuration\;
+    }
+    \Else{
+        Draw $z_{c} \gets exp(\eta)$ independently for $c \in \cal C$\;
+        Let $v_t = \max_{c \in C} e^{-g(c)} \hat{r}_c - \hat{s}_{v_{t-1}, c} - z_c$\;
+    }
+    Adversary plays $a_t$, you play $v_t$ and get a reward $r_t(v_t)$ and incur a switching cost $s(v_{t-1}, v_t)$\;
+    Run GR-Switch to estimate $\frac{1}{p(v_t/ v_{t-1})}$ as $K_s(v_{t-1}, v_t)$;
+    
+    Update $\hat{r}_{v_t} = \hat{r}_{v_t} + K_s(v_{t-1}, v_t)r_t(v_t)$\;
+    
+    Update $\hat{s}_{v_{t-1}, v_t} = \hat{s}_{v_{t}, v_{t-1}} = \hat{s}_{v_{t-1}, v_t} + K_s(v_{t-1}, v_t) s(v_{t-1}, v_t)$\;
+}
+\caption{FPL-MTD-Lite}
+\label{alg:fpl-mtd-lite}
+\end{algorithm}
+
+\if 0
+We maintain an estimate of the reward from each configuration and deploy the configuration with maximum expected reward subject to switching costs when the configuration changes and a damping factor when the configuration remains the same. The dampening factor and the switching cost estimates have been defined earlier in section \ref{sec:case1}. Our update rule, however, changes slightly. To update our reward estimates $\hat{r}$, we use the following equation:
+
+\begin{align*}
+    \hat{r}_{c} = \hat{r}_c + r_t(v_t)\frac{\mathbb{I}\{v_t\}}{p(v_t)}
+\end{align*}
+
+
+The reasoning is the same and we use geometric resampling to compute $p(v_t)$ just like Algorithm \ref{alg:fpl-mtd}.
+
+Since $v_t$ is computed using all prior strategies, $p(v_t)$ is equivalent to that of $p(v_t/v_{t-1})$ and so we can use Algorithm \ref{alg:gr-switch} to estimate it.
+\fi
+
+\section{Experiments}\label{sec:expts}
+\textbf{Add Later}
+
+\subsection{Identifying Critical Vulnerabilities}
+
+\section{Conclusion}\label{sec:conclusion}
+\textbf{Add Later}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% bibliography: see CFP for number of permitted pages
+
+\bibliographystyle{ACM-Reference-Format}  % do not change this line!
+\bibliography{sample-bibliography}  % put name of your .bib file here
+
+\end{document}

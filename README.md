@@ -10,7 +10,7 @@ These three files correspond to three different attacker strategies: eps corresp
 
 BR corresponds to Best Response (exactly the same as that of the FPL-UE paper)
 
-and fplue corresponds to an attacker whose strategy is decided by the fplue algorithm.
+and fplue corresponds to an attacker whose strategy is decided by the FPL-UE algorithm.
 
 The rest of the code in these three files is the same: they correspond to six defender strategies, there are two from my write-up and one "RobustRL" which you may not understand yet but that's okay.
 

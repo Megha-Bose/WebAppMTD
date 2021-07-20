@@ -296,6 +296,8 @@ def getBSSQStrat(game_def_util, game_att_util, sc, p, P, n_episodes):
 	end_eps_val = 0.05
 	decay_val = (end_eps_val / start_eps_val) ** (1 / max_eps_len)
 
+	x_list = [[(1/NUMCONFIGS) for i in range(NUMCONFIGS)] for j in range(NUMCONFIGS)]
+
 	for _ in range(n_episodes):
 		# sampling start state
 		s = getStratFromDist(p)
@@ -321,17 +323,30 @@ def getBSSQStrat(game_def_util, game_att_util, sc, p, P, n_episodes):
 				sdash = getStratFromDist(x)
 				a = getStratFromDist(q[tau])
 
+			v_def_sum = v_att_sum = 0
+
 			# Bellman Update of Q value
-			Qval_def[tau][s][a] = (1 - ALPHA) * Qval_def[tau][s][a] + ALPHA * (game_def_util[tau][s][a] - sc[s][sdash] + DISCOUNT_FACTOR * v_def[tau][sdash][a])
-			Qval_att[tau][s][a] = (1 - ALPHA) * Qval_att[tau][s][a] + ALPHA * (game_att_util[tau][s][a] - sc[s][sdash] + DISCOUNT_FACTOR * v_att[tau][sdash][a])
+			fact = (1/NUMATTACKS) * (1/NUMTYPES)
+			for taudash in range(NUMTYPES):
+				for adash in range(NUMATTACKS):
+					v_def_sum = v_def_sum + v_def[taudash][sdash][adash]
+					v_att_sum = v_att_sum + v_att[taudash][sdash][adash]
+			
+			v_def_sum = fact * v_def_sum
+			v_att_sum = fact * v_att_sum
+
+			Qval_def[tau][s][a] = (1 - ALPHA) * Qval_def[tau][s][a] + ALPHA * (game_def_util[tau][s][a] - sc[s][sdash] + DISCOUNT_FACTOR * v_def_sum)
+			Qval_att[tau][s][a] = (1 - ALPHA) * Qval_att[tau][s][a] + ALPHA * (game_att_util[tau][s][a] - sc[s][sdash] + DISCOUNT_FACTOR * v_att_sum)
 
 			# get BSG equilibrium values
 			x, q, v_def, v_att = getSSEq(Qval_def, Qval_att)
-			
+
 			# epsilon decay
 			eps_val = eps_val * decay_val
 			itr += 1
-	return x
+		for i in range(NUMCONFIGS):
+			x_list[s][i] = x[i]
+	return x_list
 # -------------------------------------------------------------------------------------
 
 # returns FPL strategy
@@ -522,10 +537,10 @@ for c in range(NUMCONFIGS):
 DOBSS_mixed_strat_list.append(getInitDOBSSStrat(game_def_util, game_att_util, sc, Pvec))
 
 # get BSSQ x value
-num_episodes = 10
-BSSQ_mixed_strat = getBSSQStrat(game_def_util, game_att_util, sc, [1 / NUMCONFIGS] * NUMCONFIGS, Pvec, num_episodes)
+num_episodes = 100
+BSSQ_mixed_strat_list = getBSSQStrat(game_def_util, game_att_util, sc, [1/NUMCONFIGS]*NUMCONFIGS, Pvec, num_episodes)
 
-print(BSSQ_mixed_strat)
+print(BSSQ_mixed_strat_list)
 
 FPLMTD_switch = 0
 FPLMTDLite_switch = 0
@@ -547,6 +562,8 @@ for iter1 in range(MAX_ITER):
 	#DOBSS_mixed_strat = getInitDOBSSStrat(game_def_util, game_att_util, sc, Pvec)
 	strat = [0]*NUMSTRATS
 	DOBSS_mixed_strat = DOBSS_mixed_strat_list[-1]
+
+	BSSQ_mixed_strat = BSSQ_mixed_strat_list[-1]
 
 	strat[RobustRL] = int(np.random.random()*NUMCONFIGS)
 
@@ -585,6 +602,8 @@ for iter1 in range(MAX_ITER):
 		#print(util[0])
 		#DOBSS_mixed_strat = getDOBSSStrat(game_def_util, game_att_util, sc, Pvec, strat[DOBSS])
 		DOBSS_mixed_strat = DOBSS_mixed_strat_list[strat[DOBSS]]
+
+		BSSQ_mixed_strat = BSSQ_mixed_strat_list[strat[BSSQ]]
 
 		# Reward estimates using Geometric Resampling
 		FPLMTD_rhat = FPLMTD_GR(FPLMTD_rhat, strat_old[FPLMTD], strat[FPLMTD], vulset, Pvec, util[FPLMTD], attack[FPLMTD], typ[FPLMTD], sc, t)

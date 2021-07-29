@@ -141,7 +141,7 @@
 %\renewcommand{\shortauthors}{B. Trovato et al.}
 
 \begin{abstract}  % put your abstract here!
-Moving target defense (MTD) has emerged as a technique that can be used in various applications to reduce the threat of attackers by taking away their ability to perform reconnaissance. However, a majority of the existing research in the field assumes unrealistic access to information about attacker motivations when developing MTD strategies. Many of the existing approaches also assume complete knowledge regarding the possible exploits on a particular application and how each of these exploits would affect the defender. In this work, we aim to create algorithms that generate effective moving target defense strategies that do not rely on prior knowledge. Our work assumes the only information we get is via interaction with the attacker in a repeated game setting. Since the amount of information that can be obtained through interactions may vary from application to application, we provide different algorithms that account for the different levels of information to identify optimal switching strategies. We then evaluate our algorithms using Common Vulnerabilities and Exploits mined from the National Vulnerability Database to show that our algorithms significantly outperform the state of the art.
+Moving target defense (MTD) has emerged as a technique that can be used in various applications to reduce the threat of attackers by taking away their ability to perform reconnaissance. However, a majority of the existing research in the field assumes unrealistic access to information about attacker motivations when developing MTD strategies. Many of the existing approaches also assume complete knowledge regarding the vulnerabilities of a particular application and how each of these vulnerabilities can be exploited by an attacker. In this work, we aim to create algorithms that generate effective moving target defense strategies that do not rely on prior knowledge. Our work assumes the only information we get is via interaction with the attacker in a repeated game setting. Since the amount of information that can be obtained through interactions may vary from application to application, we provide different algorithms that account for the different levels of information to identify optimal switching strategies. We then evaluate our algorithms using Common Vulnerabilities and Exploits mined from the National Vulnerability Database to show that our algorithms significantly outperform the state of the art.
 \end{abstract}
 
 
@@ -166,13 +166,10 @@ Moving target defense (MTD) has emerged as a technique that can be used in vario
 
 \input{prelims}
 
-\input{regret}
+\input{fullinfo}
 
-\input{case1}
+\input{partinfo}
 
-\input{case2}
-
-\input{case3}
 
 \section{Experiments}\label{sec:expts}
 \textbf{Add Later}
@@ -181,6 +178,7 @@ Moving target defense (MTD) has emerged as a technique that can be used in vario
 
 \section{Conclusion}\label{sec:conclusion}
 \textbf{Add Later}
+
 
 
 

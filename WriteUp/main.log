@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019) (preloaded format=pdflatex 2019.11.15)  28 JUL 2021 14:53
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019) (preloaded format=pdflatex 2019.11.15)  30 JUL 2021 12:30
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -1183,39 +1183,29 @@ Underfull \vbox (badness 10000) has occurred while \output is active []
 ])
 (./fullinfo.tex) (./partinfo.tex) (./main.bbl
 LaTeX Font Info:    Font shape `T1/LinuxBiolinumT-TLF/m/n' will be
-(Font)              scaled to size 9.0pt on input line 53.
+(Font)              scaled to size 9.0pt on input line 49.
  [2.2])
 - LAST -
-Extra skip:24.0pt
-Left:50.0pt/1.652pt
-Right:26.0pt/1.652pt
-Output:50.0pt
+Extra skip:10.76399pt
+Left:28.75pt/1.66599pt
+Right:18.0pt/1.652pt
+Output:22.375pt
  [3.3]
 Package atveryend Info: Empty hook `BeforeClearDocument' on input line 191.
 Package atveryend Info: Empty hook `AfterLastShipout' on input line 191.
  (./main.aux)
 Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 191.
 Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 191.
-
-
-Package rerunfilecheck Warning: File `main.out' has changed.
-(rerunfilecheck)                Rerun to get outlines right
-(rerunfilecheck)                or use package `bookmark'.
-
-Package rerunfilecheck Info: Checksums for `main.out':
-(rerunfilecheck)             Before: 6AFEA1CFB2346E71CD2C8DAC55CCD8A7;1160
-(rerunfilecheck)             After:  640FD4ABA82FB56FA08F41A2F2AFC14E;1646.
-
-LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
-
+Package rerunfilecheck Info: File `main.out' has not changed.
+(rerunfilecheck)             Checksum: 640FD4ABA82FB56FA08F41A2F2AFC14E;1646.
 Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 191.
  ) 
 Here is how much of TeX's memory you used:
- 20558 strings out of 492616
- 322861 string characters out of 6129480
- 448865 words of memory out of 5000000
- 23734 multiletter control sequences out of 15000+600000
- 114057 words of font info for 228 fonts, out of 8000000 for 9000
+ 20544 strings out of 492616
+ 322502 string characters out of 6129480
+ 449995 words of memory out of 5000000
+ 23729 multiletter control sequences out of 15000+600000
+ 113609 words of font info for 224 fonts, out of 8000000 for 9000
  1302 hyphenation exceptions out of 8191
  60i,16n,94p,1232b,554s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/local/texlive/2019/texmf-dist/fonts/enc/dvips/libertine/lbtn_25tcsq.enc
@@ -1239,10 +1229,10 @@ exlive/2019/texmf-dist/fonts/type1/public/newtx/txexs.pfb></usr/local/texlive/2
 019/texmf-dist/fonts/type1/public/newtx/txsys.pfb></usr/local/texlive/2019/texm
 f-dist/fonts/type1/public/newtx/zxlr.pfb></usr/local/texlive/2019/texmf-dist/fo
 nts/type1/public/newtx/zxlri.pfb>
-Output written on main.pdf (3 pages, 553018 bytes).
+Output written on main.pdf (3 pages, 549503 bytes).
 PDF statistics:
- 165 PDF objects out of 1000 (max. 8388607)
- 125 compressed objects within 2 object streams
- 23 named destinations out of 1000 (max. 500000)
- 31317 words of extra memory for PDF output out of 35830 (max. 10000000)
+ 170 PDF objects out of 1000 (max. 8388607)
+ 130 compressed objects within 2 object streams
+ 20 named destinations out of 1000 (max. 500000)
+ 31341 words of extra memory for PDF output out of 35830 (max. 10000000)
 

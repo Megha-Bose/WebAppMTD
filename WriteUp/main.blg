@@ -16,51 +16,45 @@ Warning--no key, author in sailik2016webappmtd
 Warning--no author, editor, organization, or key in sailik2016webappmtd
 Warning--empty author in sailik2016webappmtd
 Warning--empty address in sailik2016webappmtd
-Warning--empty publisher in neuandbartok2013fpl
-Warning--empty address in neuandbartok2013fpl
-Warning--page numbers missing in both pages and numpages fields in neuandbartok2013fpl
-Warning--empty booktitle in long2016fplue
-Warning--empty publisher in long2016fplue
-Warning--empty address in long2016fplue
-You've used 4 entries,
+You've used 1 entry,
             5758 wiz_defined-function locations,
-            1331 strings with 15982 characters,
-and the built_in function-call counts, 4165 in all, are:
-= -- 400
-> -- 117
+            1314 strings with 15544 characters,
+and the built_in function-call counts, 1202 in all, are:
+= -- 111
+> -- 0
 < -- 0
-+ -- 40
-- -- 44
-* -- 278
-:= -- 382
-add.period$ -- 17
-call.type$ -- 4
-change.case$ -- 24
-chr.to.int$ -- 4
-cite$ -- 23
-duplicate$ -- 427
-empty$ -- 303
-format.name$ -- 56
-if$ -- 959
++ -- 2
+- -- 0
+* -- 67
+:= -- 67
+add.period$ -- 4
+call.type$ -- 1
+change.case$ -- 4
+chr.to.int$ -- 1
+cite$ -- 14
+duplicate$ -- 142
+empty$ -- 101
+format.name$ -- 0
+if$ -- 290
 int.to.chr$ -- 1
 int.to.str$ -- 0
-missing$ -- 15
-newline$ -- 70
-num.names$ -- 24
-pop$ -- 210
+missing$ -- 5
+newline$ -- 47
+num.names$ -- 0
+pop$ -- 74
 preamble$ -- 1
-purify$ -- 59
+purify$ -- 13
 quote$ -- 0
-skip$ -- 149
+skip$ -- 46
 stack$ -- 0
-substring$ -- 270
-swap$ -- 28
+substring$ -- 100
+swap$ -- 14
 text.length$ -- 0
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 120
-warning$ -- 15
-while$ -- 23
+type$ -- 30
+warning$ -- 9
+while$ -- 3
 width$ -- 0
-write$ -- 102
-(There were 15 warnings)
+write$ -- 55
+(There were 9 warnings)

@@ -48,37 +48,4 @@
 \newblock
 
 
-\bibitem[\protect\citeauthoryear{Neu and Bart{\'o}k}{Neu and
-  Bart{\'o}k}{2013}]%
-        {neuandbartok2013fpl}
-\bibfield{author}{\bibinfo{person}{Gergely Neu} {and}
-  \bibinfo{person}{G{\'a}bor Bart{\'o}k}.} \bibinfo{year}{2013}\natexlab{}.
-\newblock \showarticletitle{An Efficient Algorithm for Learning with
-  Semi-bandit Feedback}. In \bibinfo{booktitle}{{\em ALT}}.
-\newblock
-
-
-\bibitem[\protect\citeauthoryear{Sengupta and Kambhampati}{Sengupta and
-  Kambhampati}{2020}]%
-        {sengupta2020bsmg}
-\bibfield{author}{\bibinfo{person}{Sailik Sengupta} {and}
-  \bibinfo{person}{Subbarao Kambhampati}.} \bibinfo{year}{2020}\natexlab{}.
-\newblock \bibinfo{title}{Multi-agent Reinforcement Learning in Bayesian
-  Stackelberg Markov Games for Adaptive Moving Target Defense}.
-\newblock   (\bibinfo{year}{2020}).
-\newblock
-\showeprint[arxiv]{cs.GT/2007.10457}
-
-
-\bibitem[\protect\citeauthoryear{Tran-Thanh, Xu, and Jennings}{Tran-Thanh
-  et~al\mbox{.}}{2016}]%
-        {long2016fplue}
-\bibfield{author}{\bibinfo{person}{Long Tran-Thanh}, \bibinfo{person}{Haifeng
-  Xu}, {and} \bibinfo{person}{Nicholas Jennings}.}
-  \bibinfo{year}{2016}\natexlab{}.
-\newblock \showarticletitle{Playing repeated security games with no prior
-  knowledge}.
-\newblock
-
-
 \end{thebibliography}

@@ -5,7 +5,7 @@ import gurobipy as gp
 NUMTYPES = 3 # Attacker Types
 NUMATTACKS = 292 # Max no. of attacks
 NUMCONFIGS = 4
-MAX_ITER = 10
+MAX_ITER = 100
 T = 1000
 GAMMA = 0.5 # Exploration Parameter
 ETA = 0.25
@@ -220,35 +220,32 @@ def getSSEq(game_def_qval, game_att_qval):
 	obj = gp.QuadExpr()
 
 	# pure strategies for (attacker type, attack)
-	q = {(i, j): m.addVar(lb = 0, ub = 1, vtype = gp.GRB.INTEGER, name = 'q_'+str(i)+'_'+str(j)) for i in range(NUMTYPES) for j in range(NUMATTACKS)}
+	q = {i: m.addVar(lb = 0, ub = 1, vtype = gp.GRB.INTEGER, name = 'q_'+str(i)) for i in range(NUMATTACKS)}
 	
 	# value of attacker's pure strategy
-	v = {i: m.addVar(lb = -gp.GRB.INFINITY, ub = gp.GRB.INFINITY, vtype = gp.GRB.CONTINUOUS, name = 'v_'+str(i)) for i in range(NUMTYPES)}
+	v_a = m.addVar(lb = -gp.GRB.INFINITY, ub = gp.GRB.INFINITY, vtype = gp.GRB.CONTINUOUS, name = 'v_a')
 
 	m.update()
 
 	# Update objective function
-	for c in range(NUMCONFIGS):
-		for tau in range(NUMTYPES):
-			for a in range(NUMATTACKS):
-				obj.add( game_def_qval[tau][c][a] * x[c] * q[tau, a] )
+	for sdash in range(NUMCONFIGS):
+		for a in range(NUMATTACKS):
+			obj.add( game_def_qval[sdash][a] * x[sdash] * q[a] )
 
 	# Add constraints to make attacker have a pure strategy
-	for tau in range(NUMTYPES):
-		q_sum = gp.LinExpr()
-		for a in range(NUMATTACKS):
-			q_sum.add(q[tau, a])
-		m.addConstr(q_sum==1)
+	q_sum = gp.LinExpr()
+	for a in range(NUMATTACKS):
+		q_sum.add(q[a])
+	m.addConstr(q_sum==1)
 
 	# Add constraints to make attacker select dominant pure strategy
-	for tau in range(NUMTYPES):
-		for a in range(NUMATTACKS):
-			val = gp.LinExpr()
-			val.add(v[tau])
-			for c in range(NUMCONFIGS):
-				val.add(float(game_att_qval[tau][c][a]) * x[c], -1.0)
-			m.addConstr(val >= 0)
-			m.addConstr(val <= (1 - q[tau, a]) * M)
+	for a in range(NUMATTACKS):
+		val = gp.LinExpr()
+		val.add(v_a)
+		for sdash in range(NUMCONFIGS):
+			val.add(float(game_att_qval[sdash][a]) * x[sdash], -1.0)
+		m.addConstr(val >= 0)
+		m.addConstr(val <= (1 - q[a]) * M)
 
 	# set objective funcion
 	m.setObjective(obj, gp.GRB.MAXIMIZE)
@@ -258,45 +255,42 @@ def getSSEq(game_def_qval, game_att_qval):
 
 	# return x, q and values
 	soln_x = [0.0 for i in range(NUMCONFIGS)]
-	soln_q = [[0.0]*NUMATTACKS for i in range(NUMTYPES)]
+	soln_q = [0.0 for i in range(NUMATTACKS)]
 
-	v_def = [[[0.0]*NUMATTACKS for i in range(NUMCONFIGS)] for j in range(NUMTYPES)]
-	v_att = [[[0.0]*NUMATTACKS for i in range(NUMCONFIGS)] for j in range(NUMTYPES)]
+	for sdash in range(NUMCONFIGS):
+		soln_x[sdash] = x[sdash].X
 
-	for c in range(NUMCONFIGS):
-		soln_x[c] = x[c].X
-		for tau in range(NUMTYPES):
-			for a in range(NUMATTACKS):
-				v_def[tau][c][a] = (soln_x[c] * game_def_qval[tau][c][a])
+	for a in range(NUMATTACKS):
+		soln_q[a] = q[a].X
+
+	return soln_x, soln_q, m.objVal, v_a.X
+
+
+def getBSSQStrat(def_util, att_util, sc, p, P, n_episodes):
+	x = [[(1/NUMCONFIGS) for i in range(NUMCONFIGS)] for i in range(NUMCONFIGS)]
+	q = [[[(1/NUMATTACKS) for a in range(NUMATTACKS)] for i in range(NUMCONFIGS)] for j in range(NUMTYPES)]
+
+	v_def = [0.0 for i in range(NUMCONFIGS)]
+	v_att = [[0.0 for i in range(NUMCONFIGS)] for i in range(NUMTYPES)]
+
+	Qval_def = [[[[0.0 for a in range(NUMATTACKS)] for i in range(NUMCONFIGS)] for j in range(NUMCONFIGS)] for k in range(NUMTYPES)]
+	Qval_att = [[[[0.0 for a in range(NUMATTACKS)] for i in range(NUMCONFIGS)] for j in range(NUMCONFIGS)] for k in range(NUMTYPES)]
+
+	game_def_reward = np.full((NUMTYPES, NUMCONFIGS, NUMCONFIGS, NUMATTACKS), 0.0)
+	game_att_reward = np.full((NUMTYPES, NUMCONFIGS, NUMCONFIGS, NUMATTACKS), 0.0)
 
 	for tau in range(NUMTYPES):
-		for a in range(NUMATTACKS):
-			soln_q[tau][a] = q[tau, a].X
-
-	for c in range(NUMCONFIGS):
-		for tau in range(NUMTYPES):
-			for a in range(NUMATTACKS):
-				v_att[tau][c][a] = (soln_x[c] * game_att_qval[tau][c][a])
-
-	return soln_x, soln_q, v_def, v_att
-
-def getBSSQStrat(game_def_util, game_att_util, sc, p, P, n_episodes):
-	x = [(1/NUMCONFIGS) for i in range(NUMCONFIGS)]
-	q = [[(1/NUMATTACKS)]*NUMATTACKS for i in range(NUMTYPES)]
-
-	v_def = [[[0.0]*NUMATTACKS for i in range(NUMCONFIGS)] for j in range(NUMTYPES)]
-	v_att = [[[0.0]*NUMATTACKS for i in range(NUMCONFIGS)] for j in range(NUMTYPES)]
-
-	Qval_def = [[[0.0]*NUMATTACKS for i in range(NUMCONFIGS)] for j in range(NUMTYPES)]
-	Qval_att = [[[0.0]*NUMATTACKS for i in range(NUMCONFIGS)] for j in range(NUMTYPES)]
+		for s in range(NUMCONFIGS):
+			for sdash in range(NUMCONFIGS):
+				for a in range(NUMATTACKS):
+					game_def_reward[tau][s][sdash][a] = def_util[tau][s][a] - sc[s][sdash]
+					game_att_reward[tau][s][sdash][a] = att_util[tau][s][a]
 
 	# epsilon decay from start epsilon value to end epsilon value
-	max_eps_len = 10
+	max_eps_len = 100
 	start_eps_val = 0.1
 	end_eps_val = 0.05
 	decay_val = (end_eps_val / start_eps_val) ** (1 / max_eps_len)
-
-	x_list = [[(1/NUMCONFIGS) for i in range(NUMCONFIGS)] for j in range(NUMCONFIGS)]
 
 	for _ in range(n_episodes):
 		# sampling start state
@@ -320,33 +314,20 @@ def getBSSQStrat(game_def_util, game_att_util, sc, p, P, n_episodes):
 				a = int(np.random.random()*NUMATTACKS)
 			else:
 				# exploitation
-				sdash = getStratFromDist(x)
-				a = getStratFromDist(q[tau])
+				sdash = getStratFromDist(x[s])
+				a = getStratFromDist(q[tau][s])
 
-			v_def_sum = v_att_sum = 0
-
-			# Bellman Update of Q value
-			fact = (1/NUMATTACKS) * (1/NUMTYPES)
-			for taudash in range(NUMTYPES):
-				for adash in range(NUMATTACKS):
-					v_def_sum = v_def_sum + v_def[taudash][sdash][adash]
-					v_att_sum = v_att_sum + v_att[taudash][sdash][adash]
-			
-			v_def_sum = fact * v_def_sum
-			v_att_sum = fact * v_att_sum
-
-			Qval_def[tau][s][a] = (1 - ALPHA) * Qval_def[tau][s][a] + ALPHA * (game_def_util[tau][s][a] - sc[s][sdash] + DISCOUNT_FACTOR * v_def_sum)
-			Qval_att[tau][s][a] = (1 - ALPHA) * Qval_att[tau][s][a] + ALPHA * (game_att_util[tau][s][a] - sc[s][sdash] + DISCOUNT_FACTOR * v_att_sum)
+			Qval_def[tau][s][sdash][a] = (1 - ALPHA) * Qval_def[tau][s][sdash][a] + ALPHA * (game_def_reward[tau][s][sdash][a] + DISCOUNT_FACTOR * v_def[sdash])
+			Qval_att[tau][s][sdash][a] = (1 - ALPHA) * Qval_att[tau][s][sdash][a] + ALPHA * (game_att_reward[tau][s][sdash][a] + DISCOUNT_FACTOR * v_att[tau][sdash])
 
 			# get BSG equilibrium values
-			x, q, v_def, v_att = getSSEq(Qval_def, Qval_att)
+			x[s], q[tau][s], v_def[s], v_att[tau][s] = getSSEq(Qval_def[tau][s], Qval_att[tau][s])
 
 			# epsilon decay
 			eps_val = eps_val * decay_val
+			s = sdash
 			itr += 1
-		for i in range(NUMCONFIGS):
-			x_list[s][i] = x[i]
-	return x_list
+	return x
 # -------------------------------------------------------------------------------------
 
 # returns FPL strategy

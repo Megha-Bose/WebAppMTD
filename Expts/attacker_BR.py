@@ -1,6 +1,7 @@
 import numpy as np 
 from docplex.mp.model import Model
 import gurobipy as gp
+import time
 
 NUMTYPES = 3 # Attacker Types
 NUMATTACKS = 292 # Max no. of attacks
@@ -27,10 +28,12 @@ BSSQ = 6
  
 # returns defender and attacker utilities
 def parse_util():
+	global NUMTYPES
 	def_util = []
 	att_util = []
-	f = open("utilities.txt", "r")
+	f = open("r_utilities.txt", "r")
 	y = f.readline()
+	NUMTYPES = int(y)
 	for t in range(NUMTYPES):
 		d = f.readline().split()
 		d = [float(item) for item in d]
@@ -43,11 +46,19 @@ def parse_util():
 	f.close()
 	return def_util, att_util
 
+# get number of attacks
+def parse_attacks():
+	global NUMATTACKS
+	f = open("r_attacks.txt", "r")
+	y = f.readline()
+	NUMATTACKS = int(y)
+	f.close()
 
 # returns 0-1 vulnerabilities 2D matrix for (config, attack)
 def parse_vulset():
+	global NUMCONFIGS, NUMATTACKS
 	vul_set = []
-	f = open("vulnerabilities.txt", "r")
+	f = open("r_vulnerabilities.txt", "r")
 	y = f.readline()
 	for c in range(NUMCONFIGS):
 		vul = [0]*NUMATTACKS
@@ -62,9 +73,16 @@ def parse_vulset():
 
 # returns switching cost 2D matrix
 def parse_switching():
+	global NUMCONFIGS
 	sc = []
-	f = open("switching.txt", "r")
-	for c in range(NUMCONFIGS):
+	f = open("r_switching.txt", "r")
+
+	s = f.readline().split()
+	NUMCONFIGS = len(s)
+	s = [float(item) for item in s]
+	sc.append(s)
+
+	for c in range(NUMCONFIGS-1):
 		s = f.readline().split()
 		s = [float(item) for item in s]
 		sc.append(s)
@@ -196,8 +214,6 @@ def getStratFromDist(x):
 	return len(x) - 1 
 
 
-# BSSQ Implementation -------------------------------------------------------------------------
-
 # returns BSG equilibrium values
 def getSSEq(game_def_qval, game_att_qval):
 	m = gp.Model("MIQP")
@@ -270,8 +286,8 @@ def getBSSQStrat(def_util, att_util, sc, p, P, n_episodes):
 	x = [[(1/NUMCONFIGS) for i in range(NUMCONFIGS)] for i in range(NUMCONFIGS)]
 	q = [[[(1/NUMATTACKS) for a in range(NUMATTACKS)] for i in range(NUMCONFIGS)] for j in range(NUMTYPES)]
 
-	v_def = [0.0 for i in range(NUMCONFIGS)]
-	v_att = [[0.0 for i in range(NUMCONFIGS)] for i in range(NUMTYPES)]
+	v_def = [[0.0 for i in range(NUMCONFIGS)] for j in range(NUMTYPES)]
+	v_att = [[0.0 for i in range(NUMCONFIGS)] for j in range(NUMTYPES)]
 
 	Qval_def = [[[[0.0 for a in range(NUMATTACKS)] for i in range(NUMCONFIGS)] for j in range(NUMCONFIGS)] for k in range(NUMTYPES)]
 	Qval_att = [[[[0.0 for a in range(NUMATTACKS)] for i in range(NUMCONFIGS)] for j in range(NUMCONFIGS)] for k in range(NUMTYPES)]
@@ -279,12 +295,13 @@ def getBSSQStrat(def_util, att_util, sc, p, P, n_episodes):
 	game_def_reward = np.full((NUMTYPES, NUMCONFIGS, NUMCONFIGS, NUMATTACKS), 0.0)
 	game_att_reward = np.full((NUMTYPES, NUMCONFIGS, NUMCONFIGS, NUMATTACKS), 0.0)
 
+	# incorporate switching cost in reward
 	for tau in range(NUMTYPES):
 		for s in range(NUMCONFIGS):
 			for sdash in range(NUMCONFIGS):
 				for a in range(NUMATTACKS):
-					game_def_reward[tau][s][sdash][a] = def_util[tau][s][a] - sc[s][sdash]
-					game_att_reward[tau][s][sdash][a] = att_util[tau][s][a]
+					game_def_reward[tau][s][sdash][a] = def_util[tau][sdash][a] - sc[s][sdash]
+					game_att_reward[tau][s][sdash][a] = att_util[tau][sdash][a]
 
 	# epsilon decay from start epsilon value to end epsilon value
 	max_eps_len = 100
@@ -292,7 +309,8 @@ def getBSSQStrat(def_util, att_util, sc, p, P, n_episodes):
 	end_eps_val = 0.05
 	decay_val = (end_eps_val / start_eps_val) ** (1 / max_eps_len)
 
-	for _ in range(n_episodes):
+	for ep in range(n_episodes):
+		print("BSSQ episode:"+str(ep) + "\t", end = "\r")
 		# sampling start state
 		s = getStratFromDist(p)
 
@@ -313,22 +331,22 @@ def getBSSQStrat(def_util, att_util, sc, p, P, n_episodes):
 				sdash = int(np.random.random()*NUMCONFIGS)
 				a = int(np.random.random()*NUMATTACKS)
 			else:
-				# exploitation
-				sdash = getStratFromDist(x[s])
-				a = getStratFromDist(q[tau][s])
+				# greedy exploitation
+				sdash = np.argmax(x[s])
+				a = np.argmax(q[tau][s])
 
-			Qval_def[tau][s][sdash][a] = (1 - ALPHA) * Qval_def[tau][s][sdash][a] + ALPHA * (game_def_reward[tau][s][sdash][a] + DISCOUNT_FACTOR * v_def[sdash])
+			Qval_def[tau][s][sdash][a] = (1 - ALPHA) * Qval_def[tau][s][sdash][a] + ALPHA * (game_def_reward[tau][s][sdash][a] + DISCOUNT_FACTOR * v_def[tau][sdash])
 			Qval_att[tau][s][sdash][a] = (1 - ALPHA) * Qval_att[tau][s][sdash][a] + ALPHA * (game_att_reward[tau][s][sdash][a] + DISCOUNT_FACTOR * v_att[tau][sdash])
 
-			# get BSG equilibrium values
-			x[s], q[tau][s], v_def[s], v_att[tau][s] = getSSEq(Qval_def[tau][s], Qval_att[tau][s])
+			# get BSMG SSEquilibrium values
+			for typ in range(NUMTYPES):
+				x[s], q[typ][s], v_def[typ][s], v_att[typ][s] = getSSEq(Qval_def[tau][s], Qval_att[typ][s])
 
 			# epsilon decay
 			eps_val = eps_val * decay_val
 			s = sdash
 			itr += 1
 	return x
-# -------------------------------------------------------------------------------------
 
 # returns FPL strategy
 def getFPLMTDStrat(r, s, old_strat, vulset, P, t):
@@ -500,120 +518,167 @@ def getAttackBestResponse(def_util, att_util, strat, P, vulset, Mixed_Strat, t):
 
 
 epsvec = [0.5, 0.6, 0.7, 0.8, 0.9]
-Pvec = [0.15, 0.35, 0.5]
+Pvec = None
 
-# get utilities, vulnerabilities and switching costs
-def_util, att_util = parse_util()
-vulset = parse_vulset()
-sc = parse_switching()
+if __name__ == "__main__":
+	FPLMTD_runtime = FPLMTDLite_runtime = DOBSS_runtime = RobustRL_runtime = EXP3_runtime = BSSQ_runtime = 0
 
-game_def_util, game_att_util = parse_game_utils(def_util, att_util, vulset)
+	# get switching costs, utilities, and vulnerabilities
+	sc = parse_switching()
+	parse_attacks()
+	def_util, att_util = parse_util()
+	vulset = parse_vulset()
 
+	Pvec = [1/NUMTYPES for i in range(NUMTYPES)]
 
-# get defender mixed strategies when system is in config c
-DOBSS_mixed_strat_list = []
-for c in range(NUMCONFIGS):
-	DOBSS_mixed_strat_list.append(getDOBSSStrat(game_def_util, game_att_util, sc, Pvec, c))
-# initialising DOBSS strategy
-DOBSS_mixed_strat_list.append(getInitDOBSSStrat(game_def_util, game_att_util, sc, Pvec))
+	game_def_util, game_att_util = parse_game_utils(def_util, att_util, vulset)
 
-# get BSSQ x value
-num_episodes = 100
-BSSQ_mixed_strat_list = getBSSQStrat(game_def_util, game_att_util, sc, [1/NUMCONFIGS]*NUMCONFIGS, Pvec, num_episodes)
+	DOBSS_mixed_strat_list = []
 
-print(BSSQ_mixed_strat_list)
+	start = time.time()
+	# get defender mixed strategies when system is in config c
+	for c in range(NUMCONFIGS):
+		DOBSS_mixed_strat_list.append(getDOBSSStrat(game_def_util, game_att_util, sc, Pvec, c))
+	# initialising DOBSS strategy
+	DOBSS_mixed_strat_list.append(getInitDOBSSStrat(game_def_util, game_att_util, sc, Pvec))
+	end = time.time()
+	DOBSS_runtime = end - start
 
-FPLMTD_switch = 0
-FPLMTDLite_switch = 0
-DOBSS_switch = 0
-BSSQ_switch = 0
-utility = np.array([[0.0]*T for i in range(NUMSTRATS)])
+	# get BSSQ x value
+	num_episodes = 100
 
-for iter1 in range(MAX_ITER):
-	FPLMTD_rhat = np.array([[0.0]*NUMATTACKS for i in range(NUMTYPES)])
-	FPLMTDLite_rhat = np.array([0.0]*NUMCONFIGS)
+	start = time.time()
+	BSSQ_mixed_strat_list = getBSSQStrat(game_def_util, game_att_util, sc, [1/NUMCONFIGS]*NUMCONFIGS, Pvec, num_episodes)
+	end = time.time()
+	print(BSSQ_mixed_strat_list)	
+	BSSQ_runtime = end - start
 
-	Mixed_Strat = [[0.0]*NUMATTACKS for i in range(NUMSTRATS)]
+	FPLMTD_switch = 0
+	FPLMTDLite_switch = 0
+	DOBSS_switch = 0
+	BSSQ_switch = 0
+	utility = np.array([[0.0]*T for i in range(NUMSTRATS)])
 
-	EXP3_p = [1/NUMCONFIGS]*NUMCONFIGS
-	EXP3_L = [0.0]*NUMCONFIGS
+	for iter1 in range(MAX_ITER):
+		FPLMTD_rhat = np.array([[0.0]*NUMATTACKS for i in range(NUMTYPES)])
+		FPLMTDLite_rhat = np.array([0.0]*NUMCONFIGS)
 
-	RobustRL_maxvalue = [-10000]*NUMCONFIGS
-	strat_old = [-1]*NUMSTRATS
-	#DOBSS_mixed_strat = getInitDOBSSStrat(game_def_util, game_att_util, sc, Pvec)
-	strat = [0]*NUMSTRATS
-	DOBSS_mixed_strat = DOBSS_mixed_strat_list[-1]
+		Mixed_Strat = [[0.0]*NUMATTACKS for i in range(NUMSTRATS)]
 
-	BSSQ_mixed_strat = BSSQ_mixed_strat_list[-1]
+		EXP3_p = [1/NUMCONFIGS]*NUMCONFIGS
+		EXP3_L = [0.0]*NUMCONFIGS
 
-	strat[RobustRL] = int(np.random.random()*NUMCONFIGS)
+		RobustRL_maxvalue = [-10000]*NUMCONFIGS
+		strat_old = [-1]*NUMSTRATS
+		#DOBSS_mixed_strat = getInitDOBSSStrat(game_def_util, game_att_util, sc, Pvec)
+		strat = [0]*NUMSTRATS
+		DOBSS_mixed_strat = DOBSS_mixed_strat_list[-1]
 
-	for t in range(T):
-		print(str(iter1)+":"+str(t) + "\t", end = "\r")
-		
-		# get strategies (configs) from each method
-		strat[DOBSS] = getStratFromDist(DOBSS_mixed_strat)
-		strat[RANDOM] = int(np.random.random()*NUMCONFIGS)
-		strat[FPLMTD] = getFPLMTDStrat(FPLMTD_rhat, sc, strat_old[FPLMTD], vulset, Pvec, t)
-		strat[FPLMTDLite] = getFPLMTDLiteStrat(FPLMTDLite_rhat, sc, strat_old[FPLMTDLite], t)
-		strat[EXP3] = getEXP3Strat(EXP3_p)
+		BSSQ_mixed_strat = BSSQ_mixed_strat_list[-1]
 
-		# get mixed strategy for BSSQ
-		strat[BSSQ] = getStratFromDist(BSSQ_mixed_strat)
+		strat[RobustRL] = int(np.random.random()*NUMCONFIGS)
 
-		if(strat[FPLMTD] != strat_old[FPLMTD]):
-			FPLMTD_switch += 1
-		if(strat[FPLMTDLite] != strat_old[FPLMTDLite]):
-			FPLMTDLite_switch += 1
-		if(strat[DOBSS] != strat_old[DOBSS]):
-			DOBSS_switch += 1 
-		if(strat[BSSQ] != strat_old[BSSQ]):
-			BSSQ_switch += 1 
-
-		# calculate ultilities using strategy from each method by simulating attack
-		util, typ, attack, scosts = [0.0]*NUMSTRATS, [0]*NUMSTRATS, [0]*NUMSTRATS, [0.0]*NUMSTRATS
-		for i in range(NUMSTRATS):
-			util[i], typ[i], attack[i], Mixed_Strat[i] = getAttackBestResponse(def_util, att_util, strat[i], Pvec, vulset, Mixed_Strat[i], t)
+		for t in range(T):
+			print(str(iter1)+":"+str(t) + "\t", end = "\r")
 			
-			if(strat_old[i]!=-1):
-				scosts[i] = sc[strat_old[i], strat[i]]
-			utility[i, t] += (util[i] - scosts[i])
+			# get strategies (configs) from each method
+			strat[DOBSS] = getStratFromDist(DOBSS_mixed_strat)
+			strat[RANDOM] = int(np.random.random()*NUMCONFIGS)
+
+			start = time.time()
+			strat[FPLMTD] = getFPLMTDStrat(FPLMTD_rhat, sc, strat_old[FPLMTD], vulset, Pvec, t)
+			end = time.time()
+			FPLMTD_runtime += (end - start)
+
+			start = time.time()
+			strat[FPLMTDLite] = getFPLMTDLiteStrat(FPLMTDLite_rhat, sc, strat_old[FPLMTDLite], t)
+			end = time.time()
+			FPLMTDLite_runtime += (end - start)
+
+			start = time.time()
+			strat[EXP3] = getEXP3Strat(EXP3_p)
+			end = time.time()
+			EXP3_runtime += (end - start)
+
+			# get mixed strategy for BSSQ
+			strat[BSSQ] = getStratFromDist(BSSQ_mixed_strat)
+
+			if(strat[FPLMTD] != strat_old[FPLMTD]):
+				FPLMTD_switch += 1
+			if(strat[FPLMTDLite] != strat_old[FPLMTDLite]):
+				FPLMTDLite_switch += 1
+			if(strat[DOBSS] != strat_old[DOBSS]):
+				DOBSS_switch += 1 
+			if(strat[BSSQ] != strat_old[BSSQ]):
+				BSSQ_switch += 1 
+
+			# calculate ultilities using strategy from each method by simulating attack
+			util, typ, attack, scosts = [0.0]*NUMSTRATS, [0]*NUMSTRATS, [0]*NUMSTRATS, [0.0]*NUMSTRATS
+			for i in range(NUMSTRATS):
+				util[i], typ[i], attack[i], Mixed_Strat[i] = getAttackBestResponse(def_util, att_util, strat[i], Pvec, vulset, Mixed_Strat[i], t)
+				
+				if(strat_old[i]!=-1):
+					scosts[i] = sc[strat_old[i], strat[i]]
+				utility[i, t] += (util[i] - scosts[i])
 
 
-		#print(util[0])
-		#DOBSS_mixed_strat = getDOBSSStrat(game_def_util, game_att_util, sc, Pvec, strat[DOBSS])
-		DOBSS_mixed_strat = DOBSS_mixed_strat_list[strat[DOBSS]]
+			#print(util[0])
+			#DOBSS_mixed_strat = getDOBSSStrat(game_def_util, game_att_util, sc, Pvec, strat[DOBSS])
+			DOBSS_mixed_strat = DOBSS_mixed_strat_list[strat[DOBSS]]
 
-		BSSQ_mixed_strat = BSSQ_mixed_strat_list[strat[BSSQ]]
+			BSSQ_mixed_strat = BSSQ_mixed_strat_list[strat[BSSQ]]
 
-		# Reward estimates using Geometric Resampling
-		FPLMTD_rhat = FPLMTD_GR(FPLMTD_rhat, strat_old[FPLMTD], strat[FPLMTD], vulset, Pvec, util[FPLMTD], attack[FPLMTD], typ[FPLMTD], sc, t)
-		FPLMTDLite_rhat = FPLMTDLite_GR(FPLMTDLite_rhat, strat_old[FPLMTDLite], strat[FPLMTDLite], util[FPLMTDLite], sc, t)
 
-		# EXP3 update using utilities and last EXP3_p
-		EXP3_L[strat[EXP3]] += (util[EXP3] - scosts[EXP3])/EXP3_p[strat[EXP3]]
-		temp = np.sum([np.exp(ETA*EXP3_L[c]) for c in range(NUMCONFIGS)])
-		for c in range(NUMCONFIGS):
-			EXP3_p[c] = np.exp(ETA*EXP3_L[c])/temp 
+			# Reward estimates using Geometric Resampling
+			start = time.time()
+			FPLMTD_rhat = FPLMTD_GR(FPLMTD_rhat, strat_old[FPLMTD], strat[FPLMTD], vulset, Pvec, util[FPLMTD], attack[FPLMTD], typ[FPLMTD], sc, t)
+			end = time.time()
+			FPLMTD_runtime += (end - start)
 
-		for i in range(NUMSTRATS):
-			strat_old[i] = strat[i]
+			start = time.time()
+			FPLMTDLite_rhat = FPLMTDLite_GR(FPLMTDLite_rhat, strat_old[FPLMTDLite], strat[FPLMTDLite], util[FPLMTDLite], sc, t)
+			end = time.time()
+			FPLMTDLite_runtime += (end - start)
 
-		RobustRL_maxvalue[strat[RobustRL]] = max(util[RobustRL] - scosts[RobustRL], RobustRL_maxvalue[strat[RobustRL]])
-		strat[RobustRL] = np.argmin(RobustRL_maxvalue)
 
-print("FPLMTD_Switch = ", FPLMTD_switch/MAX_ITER)
-print("FPLMTDLite_Switch = ", FPLMTDLite_switch/MAX_ITER)
-print("DOBSS_Switch = ", DOBSS_switch/MAX_ITER)
-print("BSSQ_Switch = ", BSSQ_switch/MAX_ITER)
-# print(EXP3_L)
-f_out = open(str(NUMCONFIGS) + "output_BestResponse.txt", "w")
-for i in range(NUMSTRATS):
-	print(np.sum(utility[i, :])/MAX_ITER)
-	for t in range(T):
-		f_out.write(str(utility[i, t]/MAX_ITER) + " ")
-	f_out.write("\n")
-print("\n")
+			# EXP3 update using utilities and last EXP3_p
+			start = time.time()
+			EXP3_L[strat[EXP3]] += (util[EXP3] - scosts[EXP3])/EXP3_p[strat[EXP3]]
+			temp = np.sum([np.exp(ETA*EXP3_L[c]) for c in range(NUMCONFIGS)])
+			for c in range(NUMCONFIGS):
+				EXP3_p[c] = np.exp(ETA*EXP3_L[c])/temp 
+			end = time.time()
+			EXP3_runtime += (end - start)
+
+			for i in range(NUMSTRATS):
+				strat_old[i] = strat[i]
+
+
+			RobustRL_maxvalue[strat[RobustRL]] = max(util[RobustRL] - scosts[RobustRL], RobustRL_maxvalue[strat[RobustRL]])
+			strat[RobustRL] = np.argmin(RobustRL_maxvalue)
+
+	print("FPLMTD_Switch = ", FPLMTD_switch/MAX_ITER)
+	print("FPLMTDLite_Switch = ", FPLMTDLite_switch/MAX_ITER)
+	print("DOBSS_Switch = ", DOBSS_switch/MAX_ITER)
+	print("BSSQ_Switch = ", BSSQ_switch/MAX_ITER)
+	# print(EXP3_L)
+	print("\n")
+
+	print(f"FPLMTD Run-time: {FPLMTD_runtime}")
+	print(f"FPLMTDLite Run-time: {FPLMTDLite_runtime}")
+	print(f"DOBSS Run-time: {DOBSS_runtime}")
+	print(f"EXP3 Run-time: {EXP3_runtime}")
+	print(f"BSSQ Run-time: {BSSQ_runtime}")
+	print("\n")
+
+	# FPLMTD, FPLMTDLite, DOBSS, RANDOM, RobustRL, EXP3, BSSQ sum of utilities
+	f_out = open(str(NUMCONFIGS) + "output_BestResponse.txt", "w")
+	for i in range(NUMSTRATS):
+		print(np.sum(utility[i, :])/MAX_ITER)
+		for t in range(T):
+			f_out.write(str(utility[i, t]/MAX_ITER) + " ")
+		f_out.write("\n")
+	print("\n")
 
 
 

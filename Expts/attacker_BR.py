@@ -9,14 +9,17 @@ NUMCONFIGS = 4
 MAX_ITER = 100
 T = 1000
 GAMMA = 0.5 # Exploration Parameter
-ETA = 0.25
 EPSILON = 0.1
 ALPHA = 0.1
 DISCOUNT_FACTOR = 0.8
 M = 1000000
 Lmax = 1000
+PADDING = 1/(T**(1/3))
 
-NUMSTRATS = 7
+FPL_ETA = np.sqrt(np.log(NUMCONFIGS)/(NUMCONFIGS*T)) #FPL Hyperparameter
+EXP_ETA = np.sqrt(2*np.log(NUMCONFIGS)/(NUMCONFIGS*T)) #EXP Hyperparameter
+
+NUMSTRATS = 9
 FPLMTD = 0
 FPLMTDLite = 1
 DOBSS = 2
@@ -24,7 +27,9 @@ RANDOM = 3
 RobustRL = 4
 EXP3 = 5
 BSSQ = 6
-
+PaddedExp3 = 7
+SwitchingExp3 = 8
+FPLGR = 9
  
 # returns defender and attacker utilities
 def parse_util():
@@ -363,7 +368,7 @@ def getFPLMTDStrat(r, s, old_strat, vulset, P, t):
 	# adding perturbation
 	for tau in range(NUMTYPES):
 		for a in range(NUMATTACKS):
-			rhat[tau, a] -= np.random.exponential(ETA)
+			rhat[tau, a] = rhat[tau, a] - np.random.exponential(1/FPL_ETA)
 
 	# considering utility for attacks that give minimum reward
 	# while considering attacker type probability
@@ -396,7 +401,7 @@ def getFPLMTDLiteStrat(r, s, old_strat, t):
 
 	# adding perturbation
 	for c in range(NUMCONFIGS):
-		rhat[c] -= np.random.exponential(ETA)
+		rhat[c] -= np.random.exponential(1/FPL_ETA)
 
 	if(old_strat != -1):
 		rhat[old_strat] /= np.exp(-ALPHA)
@@ -406,6 +411,14 @@ def getFPLMTDLiteStrat(r, s, old_strat, t):
 	new_u = [rhat[c] - shat[old_strat, c] for c in range(NUMCONFIGS)]
 	# return the best / leader strategy
 	return np.argmax(new_u)
+
+# returns FPL+GR strategy
+def getFPLGRStrat(r):
+	rhat = r.copy()
+	for c in range(NUMCONFIGS):
+		rhat[c] -= np.random.exponential(1/FPL_ETA)
+
+	return np.argmax(rhat)
 
 # update reward estimates using GR for FPL
 def FPLMTD_GR(r, old_strat, strat, vulset, P, util, attack, tau, switch_costs, t):
@@ -439,6 +452,17 @@ def FPLMTDLite_GR(r, old_strat, strat, util, switch_costs, t):
 	rhat[strat]+= util*l
 	return rhat
 
+def FPL_GR(r, strat):
+	rhat = np.copy(r)
+	l = 1
+	while(l < Lmax):
+		strat2 = getFPLGRStrat(rhat)
+		if(strat2 == strat):
+			break
+		l+=1
+	rhat[strat]+= util*l
+	return rhat
+
 # returns RobustRL strategy
 def getRobustRLStrat(movelist, utillist):
 	if(np.random.random()< EPSILON):
@@ -458,6 +482,19 @@ def getEXP3Strat(p):
 			return c
 		y -= p[c]
 	return NUMCONFIGS - 1
+
+def getPaddedExp3Strat(p):
+	z = np.random.random()
+	if(z < PADDING):
+		y = np.random.random()
+		for c in range(NUMCONFIGS):
+			if(y < p[c]):
+				return c
+			y -= p[c]
+		return NUMCONFIGS - 1
+
+	return int(np.random.random()*NUMCONFIGS)
+
 
 # using GR to update attacker reward estimates for FPL-UE
 def Attacker_GR(rhat, vdash, util):
@@ -563,10 +600,19 @@ if __name__ == "__main__":
 		FPLMTD_rhat = np.array([[0.0]*NUMATTACKS for i in range(NUMTYPES)])
 		FPLMTDLite_rhat = np.array([0.0]*NUMCONFIGS)
 
+		FPLGR_rhat = np.array([0.0]*NUMCONFIGS)
+
 		Mixed_Strat = [[0.0]*NUMATTACKS for i in range(NUMSTRATS)]
 
 		EXP3_p = [1/NUMCONFIGS]*NUMCONFIGS
 		EXP3_L = [0.0]*NUMCONFIGS
+
+		PaddedExp3_p = [1/NUMCONFIGS]*NUMCONFIGS
+		PaddedExp3_L = [0.0]*NUMCONFIGS
+
+		SwitchingExp3_p = [1/NUMCONFIGS]*NUMCONFIGS
+		SwitchingExp3_L = [0.0]*NUMCONFIGS
+		switchingExp3_util = 0.0
 
 		RobustRL_maxvalue = [-10000]*NUMCONFIGS
 		strat_old = [-1]*NUMSTRATS
@@ -599,6 +645,13 @@ if __name__ == "__main__":
 			strat[EXP3] = getEXP3Strat(EXP3_p)
 			end = time.time()
 			EXP3_runtime += (end - start)
+
+			strat[PaddedExp3] = getPaddedExp3Strat(PaddedExp3_p)
+
+			if(t%2 == 0):
+				strat[SwitchingExp3] = getEXP3Strat(SwitchingExp3_p)
+
+			strat[FPLGR] = getFPLGRStrat(FPLGR_rhat)
 
 			# get mixed strategy for BSSQ
 			strat[BSSQ] = getStratFromDist(BSSQ_mixed_strat)
@@ -640,15 +693,37 @@ if __name__ == "__main__":
 			end = time.time()
 			FPLMTDLite_runtime += (end - start)
 
+			FPLGR_rhat = FPL_GR(FPLGR_rhat, strat[FPLGR])
+
 
 			# EXP3 update using utilities and last EXP3_p
 			start = time.time()
 			EXP3_L[strat[EXP3]] += (util[EXP3] - scosts[EXP3])/EXP3_p[strat[EXP3]]
-			temp = np.sum([np.exp(ETA*EXP3_L[c]) for c in range(NUMCONFIGS)])
+			temp = np.sum([np.exp(EXP_ETA*EXP3_L[c]) for c in range(NUMCONFIGS)])
 			for c in range(NUMCONFIGS):
-				EXP3_p[c] = np.exp(ETA*EXP3_L[c])/temp 
+				EXP3_p[c] = np.exp(EXP_ETA*EXP3_L[c])/temp 
 			end = time.time()
 			EXP3_runtime += (end - start)
+
+			# Switching Exp3 update rule
+
+			SwitchingExp3_util += util[SwitchingExp3] - scosts[SwitchingExp3]
+			if(t%2 == 1):
+				SwitchingExp3_L[strat[SwitchingExp3]] += (SwitchingExp3_util)/SwitchingExp3_p[strat[SwitchingExp3]]
+				temp = np.sum([np.exp(EXP_ETA*SwitchingExp3_L[c]) for c in range(NUMCONFIGS)])
+				for c in range(NUMCONFIGS):
+					SwitchingExp3_p[c] = np.exp(EXP_ETA*SwitchingExp3_L[c])/temp 
+				SwitchingExp3_util = 0.0
+
+			# PaddedExp3 Update Rule
+			updated_p = [0.0]*NUMCONFIGS
+			for c in range(NUMCONFIGS):
+				updated_p[c] += PADDING*PaddedExp3_p[c]
+			updated_p[old_strat] += (1-PADDING)
+			PaddedExp3_L[strat[Padded_Exp3]] += (util[PaddedExp3] - scosts[PaddedExp3])/updated_p[strat[PaddedExp3]]
+			temp = np.sum([np.exp(EXP_ETA*PaddedExp3_L[c]) for c in range(NUMCONFIGS)])
+			for c in range(NUMCONFIGS):
+				PaddedExp3_p[c] = np.exp(EXP_ETA*PaddedExp3_L[c])/temp 
 
 			for i in range(NUMSTRATS):
 				strat_old[i] = strat[i]

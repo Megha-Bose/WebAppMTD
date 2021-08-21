@@ -6,7 +6,7 @@ import time
 NUMTYPES = 3 # Attacker Types
 NUMATTACKS = 292 # Max no. of attacks
 NUMCONFIGS = 4
-MAX_ITER = 100
+MAX_ITER = 10
 T = 1000
 GAMMA = 0.5 # Exploration Parameter
 EPSILON = 0.1
@@ -19,7 +19,9 @@ PADDING = 1/(T**(1/3))
 FPL_ETA = np.sqrt(np.log(NUMCONFIGS)/(NUMCONFIGS*T)) #FPL Hyperparameter
 EXP_ETA = np.sqrt(2*np.log(NUMCONFIGS)/(NUMCONFIGS*T)) #EXP Hyperparameter
 
-NUMSTRATS = 9
+strats_list = ["FPLMTD", "FPLMTDLite", "DOBSS", "RANDOM", "RobustRL", "EXP3", "BSSQ", "PaddedExp3", "SwitchingExp3", "FPLGR"]
+
+NUMSTRATS = 10
 FPLMTD = 0
 FPLMTDLite = 1
 DOBSS = 2
@@ -309,7 +311,7 @@ def getBSSQStrat(def_util, att_util, sc, p, P, n_episodes):
 					game_att_reward[tau][s][sdash][a] = att_util[tau][sdash][a]
 
 	# epsilon decay from start epsilon value to end epsilon value
-	max_eps_len = 100
+	max_eps_len = 10
 	start_eps_val = 0.1
 	end_eps_val = 0.05
 	decay_val = (end_eps_val / start_eps_val) ** (1 / max_eps_len)
@@ -452,7 +454,7 @@ def FPLMTDLite_GR(r, old_strat, strat, util, switch_costs, t):
 	rhat[strat]+= util*l
 	return rhat
 
-def FPL_GR(r, strat):
+def FPL_GR(r, strat, util):
 	rhat = np.copy(r)
 	l = 1
 	while(l < Lmax):
@@ -508,7 +510,7 @@ def Attacker_GR(rhat, vdash, util):
 			v = int(np.random.random()*NUMCONFIGS)
 		else:
 			# FPL
-			rdash = r - np.random.exponential(ETA, NUMATTACKS)
+			rdash = r - np.random.exponential(FPL_ETA, NUMATTACKS)
 			v = np.argmax(rdash)
 		if(vdash == v):
 			l = i
@@ -558,7 +560,8 @@ epsvec = [0.5, 0.6, 0.7, 0.8, 0.9]
 Pvec = None
 
 if __name__ == "__main__":
-	FPLMTD_runtime = FPLMTDLite_runtime = DOBSS_runtime = RobustRL_runtime = EXP3_runtime = BSSQ_runtime = 0
+	FPLMTD_runtime = FPLMTDLite_runtime = DOBSS_runtime = RANDOM_runtime = RobustRL_runtime = 0
+	EXP3_runtime = BSSQ_runtime = PaddedExp3_runtime = SwitchingExp3_runtime = FPLGR_runtime = 0
 
 	# get switching costs, utilities, and vulnerabilities
 	sc = parse_switching()
@@ -566,6 +569,7 @@ if __name__ == "__main__":
 	def_util, att_util = parse_util()
 	vulset = parse_vulset()
 
+	# attacker type probability
 	Pvec = [1/NUMTYPES for i in range(NUMTYPES)]
 
 	game_def_util, game_att_util = parse_game_utils(def_util, att_util, vulset)
@@ -581,19 +585,9 @@ if __name__ == "__main__":
 	end = time.time()
 	DOBSS_runtime = end - start
 
-	# get BSSQ x value
-	num_episodes = 100
+	FPLMTD_switch = FPLMTDLite_switch = DOBSS_switch = RANDOM_switch = RobustRL_switch = 0
+	EXP3_switch = BSSQ_switch = PaddedExp3_switch = SwitchingExp3_switch = FPLGR_switch = 0
 
-	start = time.time()
-	BSSQ_mixed_strat_list = getBSSQStrat(game_def_util, game_att_util, sc, [1/NUMCONFIGS]*NUMCONFIGS, Pvec, num_episodes)
-	end = time.time()
-	print(BSSQ_mixed_strat_list)	
-	BSSQ_runtime = end - start
-
-	FPLMTD_switch = 0
-	FPLMTDLite_switch = 0
-	DOBSS_switch = 0
-	BSSQ_switch = 0
 	utility = np.array([[0.0]*T for i in range(NUMSTRATS)])
 
 	for iter1 in range(MAX_ITER):
@@ -612,13 +606,22 @@ if __name__ == "__main__":
 
 		SwitchingExp3_p = [1/NUMCONFIGS]*NUMCONFIGS
 		SwitchingExp3_L = [0.0]*NUMCONFIGS
-		switchingExp3_util = 0.0
+		SwitchingExp3_util = 0.0
 
 		RobustRL_maxvalue = [-10000]*NUMCONFIGS
 		strat_old = [-1]*NUMSTRATS
 		#DOBSS_mixed_strat = getInitDOBSSStrat(game_def_util, game_att_util, sc, Pvec)
 		strat = [0]*NUMSTRATS
 		DOBSS_mixed_strat = DOBSS_mixed_strat_list[-1]
+
+		# get BSSQ x value
+		num_episodes = 10
+
+		start = time.time()
+		BSSQ_mixed_strat_list = getBSSQStrat(game_def_util, game_att_util, sc, [1/NUMCONFIGS]*NUMCONFIGS, Pvec, num_episodes)
+		end = time.time()
+		# print(BSSQ_mixed_strat_list)	
+		BSSQ_runtime += (end - start)
 
 		BSSQ_mixed_strat = BSSQ_mixed_strat_list[-1]
 
@@ -662,8 +665,20 @@ if __name__ == "__main__":
 				FPLMTDLite_switch += 1
 			if(strat[DOBSS] != strat_old[DOBSS]):
 				DOBSS_switch += 1 
+			if(strat[RANDOM] != strat_old[RANDOM]):
+				RANDOM_switch += 1 
+			if(strat[RobustRL] != strat_old[RobustRL]):
+				RobustRL_switch += 1 
+			if(strat[EXP3] != strat_old[EXP3]):
+				EXP3_switch += 1
 			if(strat[BSSQ] != strat_old[BSSQ]):
 				BSSQ_switch += 1 
+			if(strat[PaddedExp3] != strat_old[PaddedExp3]):
+				PaddedExp3_switch += 1 
+			if(strat[SwitchingExp3] != strat_old[SwitchingExp3]):
+				SwitchingExp3_switch += 1 
+			if(strat[FPLGR] != strat_old[FPLGR]):
+				FPLGR_switch += 1 
 
 			# calculate ultilities using strategy from each method by simulating attack
 			util, typ, attack, scosts = [0.0]*NUMSTRATS, [0]*NUMSTRATS, [0]*NUMSTRATS, [0.0]*NUMSTRATS
@@ -693,7 +708,7 @@ if __name__ == "__main__":
 			end = time.time()
 			FPLMTDLite_runtime += (end - start)
 
-			FPLGR_rhat = FPL_GR(FPLGR_rhat, strat[FPLGR])
+			FPLGR_rhat = FPL_GR(FPLGR_rhat, strat[FPLGR], util[FPLGR])
 
 
 			# EXP3 update using utilities and last EXP3_p
@@ -706,7 +721,7 @@ if __name__ == "__main__":
 			EXP3_runtime += (end - start)
 
 			# Switching Exp3 update rule
-
+			start = time.time()
 			SwitchingExp3_util += util[SwitchingExp3] - scosts[SwitchingExp3]
 			if(t%2 == 1):
 				SwitchingExp3_L[strat[SwitchingExp3]] += (SwitchingExp3_util)/SwitchingExp3_p[strat[SwitchingExp3]]
@@ -714,42 +729,60 @@ if __name__ == "__main__":
 				for c in range(NUMCONFIGS):
 					SwitchingExp3_p[c] = np.exp(EXP_ETA*SwitchingExp3_L[c])/temp 
 				SwitchingExp3_util = 0.0
+			end = time.time()
+			SwitchingExp3_runtime += (end - start)
 
 			# PaddedExp3 Update Rule
+			start = time.time()
 			updated_p = [0.0]*NUMCONFIGS
 			for c in range(NUMCONFIGS):
 				updated_p[c] += PADDING*PaddedExp3_p[c]
-			updated_p[old_strat] += (1-PADDING)
-			PaddedExp3_L[strat[Padded_Exp3]] += (util[PaddedExp3] - scosts[PaddedExp3])/updated_p[strat[PaddedExp3]]
+			updated_p[strat_old[PaddedExp3]] += (1-PADDING)
+			PaddedExp3_L[strat[PaddedExp3]] += (util[PaddedExp3] - scosts[PaddedExp3])/updated_p[strat[PaddedExp3]]
 			temp = np.sum([np.exp(EXP_ETA*PaddedExp3_L[c]) for c in range(NUMCONFIGS)])
 			for c in range(NUMCONFIGS):
-				PaddedExp3_p[c] = np.exp(EXP_ETA*PaddedExp3_L[c])/temp 
+				PaddedExp3_p[c] = np.exp(EXP_ETA*PaddedExp3_L[c])/temp
+			end = time.time() 
+			PaddedExp3_runtime += (end - start)
 
 			for i in range(NUMSTRATS):
 				strat_old[i] = strat[i]
 
-
+			start = time.time()
 			RobustRL_maxvalue[strat[RobustRL]] = max(util[RobustRL] - scosts[RobustRL], RobustRL_maxvalue[strat[RobustRL]])
 			strat[RobustRL] = np.argmin(RobustRL_maxvalue)
+			end = time.time()
+			RobustRL_runtime += (end - start)
 
 	print("FPLMTD_Switch = ", FPLMTD_switch/MAX_ITER)
 	print("FPLMTDLite_Switch = ", FPLMTDLite_switch/MAX_ITER)
 	print("DOBSS_Switch = ", DOBSS_switch/MAX_ITER)
+	print("RANDOM_Switch = ", RANDOM_switch/MAX_ITER)
+	print("RobustRL_Switch = ", RobustRL_switch/MAX_ITER)
+	print("EXP3_Switch = ", EXP3_switch/MAX_ITER)
 	print("BSSQ_Switch = ", BSSQ_switch/MAX_ITER)
-	# print(EXP3_L)
+	print("PaddedExp3_Switch = ", PaddedExp3_switch/MAX_ITER)
+	print("SwitchingExp3_Switch = ", SwitchingExp3_switch/MAX_ITER)
+	print("FPLGR_Switch = ", FPLGR_switch/MAX_ITER)
 	print("\n")
 
-	print(f"FPLMTD Run-time: {FPLMTD_runtime}")
-	print(f"FPLMTDLite Run-time: {FPLMTDLite_runtime}")
-	print(f"DOBSS Run-time: {DOBSS_runtime}")
-	print(f"EXP3 Run-time: {EXP3_runtime}")
-	print(f"BSSQ Run-time: {BSSQ_runtime}")
+	print("FPLMTD Run-time = ", FPLMTD_runtime/MAX_ITER)
+	print("FPLMTDLite Run-time = ", FPLMTDLite_runtime/MAX_ITER)
+	print("DOBSS Run-time = ", DOBSS_runtime/MAX_ITER)
+	print("RANDOM Run-time = ", RANDOM_runtime/MAX_ITER)
+	print("RobustRL Run-time = ", RobustRL_runtime/MAX_ITER)
+	print("EXP3 Run-time = ", EXP3_runtime/MAX_ITER)
+	print("BSSQ Run-time = ", BSSQ_runtime/MAX_ITER)
+	print("PaddedExp3 Run-time = ", PaddedExp3_runtime/MAX_ITER)
+	print("SwitchingExp3 Run-time = ", SwitchingExp3_runtime/MAX_ITER)
+	print("FPLGR Run-time = ", FPLGR_runtime/MAX_ITER)
 	print("\n")
 
 	# FPLMTD, FPLMTDLite, DOBSS, RANDOM, RobustRL, EXP3, BSSQ sum of utilities
 	f_out = open(str(NUMCONFIGS) + "output_BestResponse.txt", "w")
 	for i in range(NUMSTRATS):
-		print(np.sum(utility[i, :])/MAX_ITER)
+		# print(np.sum(utility[i, :])/MAX_ITER)
+		print(strats_list[i]+" Utility = " + str(np.sum(utility[i, :])/MAX_ITER))
 		for t in range(T):
 			f_out.write(str(utility[i, t]/MAX_ITER) + " ")
 		f_out.write("\n")

@@ -10,13 +10,20 @@ if __name__ == "__main__":
     switches_list = []
     runtimes_list = []
     utils_list = []
+    details = []
+
+    config_num = []
+    attack_num = []
+    type_num = []
 
     n_datasets = int(sys.argv[1])+1
     for dataset_num in range(n_datasets):
         f = open(DIR + str(dataset_num) + "overall_out_BestResponse.txt")
-        config_num = int(f.readline())
-        attack_num = int(f.readline())
-        type_num = int(f.readline())
+        config_num.append(int(f.readline()))
+        attack_num.append(int(f.readline()))
+        type_num.append((f.readline()))
+
+        details.append([config_num, attack_num, type_num])
 
 
         f.readline()
@@ -56,6 +63,10 @@ if __name__ == "__main__":
         x = range(n_datasets)
         y = switch_arr
         plt.xticks(np.arange(min(x), max(x)+1, 1.0))
+        my_xticks = []
+        for d in range(n_datasets):
+            my_xticks.append('Configs: ' + str(config_num[d]) + '\nAttacks: ' + str(attack_num[d]) + '\nTypes: ' + str(type_num[d]))        
+        plt.xticks(x, my_xticks)
         plt.plot(x, y, label = strats_list[strat])
         
     plt.xlabel('Dataset Number')
@@ -72,6 +83,10 @@ if __name__ == "__main__":
         x = range(n_datasets)
         y = runtime_arr
         plt.xticks(np.arange(min(x), max(x)+1, 1.0))
+        my_xticks = []
+        for d in range(n_datasets):
+            my_xticks.append('Configs: ' + str(config_num[d]) + '\nAttacks: ' + str(attack_num[d]) + '\nTypes: ' + str(type_num[d]))        
+        plt.xticks(x, my_xticks)
         plt.plot(x, y, label = strats_list[strat])
         
     plt.xlabel('Dataset Number')
@@ -88,6 +103,10 @@ if __name__ == "__main__":
         x = range(n_datasets)
         y = util_arr
         plt.xticks(np.arange(min(x), max(x)+1, 1.0))
+        my_xticks = []
+        for d in range(n_datasets):
+            my_xticks.append('Configs: ' + str(config_num[d]) + '\nAttacks: ' + str(attack_num[d]) + '\nTypes: ' + str(type_num[d]))
+        plt.xticks(x, my_xticks)
         plt.plot(x, y, label = strats_list[strat])
         
     plt.xlabel('Dataset Number')

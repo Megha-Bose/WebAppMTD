@@ -1,7 +1,11 @@
+import sys
 import numpy as np 
 from docplex.mp.model import Model
 import gurobipy as gp
 import time
+
+IN_DIR = "../Data/input/"
+OUT_DIR = "../Data/output/"
 
 NUMTYPES = 3 # Attacker Types
 NUMATTACKS = 292 # Max no. of attacks
@@ -19,7 +23,6 @@ PADDING = 1/(T**(1/3))
 FPL_ETA = np.sqrt(np.log(NUMCONFIGS)/(NUMCONFIGS*T)) #FPL Hyperparameter
 EXP_ETA = np.sqrt(2*np.log(NUMCONFIGS)/(NUMCONFIGS*T)) #EXP Hyperparameter
 
-strats_list = ["FPLMTD", "FPLMTDLite", "DOBSS", "RANDOM", "RobustRL", "EXP3", "BSSQ", "PaddedExp3", "SwitchingExp3", "FPLGR"]
 
 NUMSTRATS = 10
 FPLMTD = 0
@@ -34,11 +37,11 @@ SwitchingExp3 = 8
 FPLGR = 9
  
 # returns defender and attacker utilities
-def parse_util():
+def parse_util(dataset_num):
 	global NUMTYPES
 	def_util = []
 	att_util = []
-	f = open("r_utilities.txt", "r")
+	f = open(IN_DIR + str(dataset_num) + "utilities.txt", "r")
 	y = f.readline()
 	NUMTYPES = int(y)
 	for t in range(NUMTYPES):
@@ -54,18 +57,18 @@ def parse_util():
 	return def_util, att_util
 
 # get number of attacks
-def parse_attacks():
+def parse_attacks(dataset_num):
 	global NUMATTACKS
-	f = open("r_attacks.txt", "r")
+	f = open(IN_DIR + str(dataset_num) + "attacks.txt", "r")
 	y = f.readline()
 	NUMATTACKS = int(y)
 	f.close()
 
 # returns 0-1 vulnerabilities 2D matrix for (config, attack)
-def parse_vulset():
+def parse_vulset(dataset_num):
 	global NUMCONFIGS, NUMATTACKS
 	vul_set = []
-	f = open("r_vulnerabilities.txt", "r")
+	f = open(IN_DIR + str(dataset_num) + "vulnerabilities.txt", "r")
 	y = f.readline()
 	for c in range(NUMCONFIGS):
 		vul = [0]*NUMATTACKS
@@ -79,10 +82,10 @@ def parse_vulset():
 	return vul_set
 
 # returns switching cost 2D matrix
-def parse_switching():
+def parse_switching(dataset_num):
 	global NUMCONFIGS
 	sc = []
-	f = open("r_switching.txt", "r")
+	f = open(IN_DIR + str(dataset_num) + "switching.txt", "r")
 
 	s = f.readline().split()
 	NUMCONFIGS = len(s)
@@ -289,7 +292,7 @@ def getSSEq(game_def_qval, game_att_qval):
 	return soln_x, soln_q, m.objVal, v_a.X
 
 
-def getBSSQStrat(def_util, att_util, sc, p, P, n_episodes):
+def getBSSQStrat(def_util, att_util, sc, p, P):
 	x = [[(1/NUMCONFIGS) for i in range(NUMCONFIGS)] for i in range(NUMCONFIGS)]
 	q = [[[(1/NUMATTACKS) for a in range(NUMATTACKS)] for i in range(NUMCONFIGS)] for j in range(NUMTYPES)]
 
@@ -311,13 +314,14 @@ def getBSSQStrat(def_util, att_util, sc, p, P, n_episodes):
 					game_att_reward[tau][s][sdash][a] = att_util[tau][sdash][a]
 
 	# epsilon decay from start epsilon value to end epsilon value
+	n_episodes = 10
 	max_eps_len = 10
 	start_eps_val = 0.1
 	end_eps_val = 0.05
 	decay_val = (end_eps_val / start_eps_val) ** (1 / max_eps_len)
 
 	for ep in range(n_episodes):
-		print("BSSQ episode:"+str(ep) + "\t", end = "\r")
+		print("BSSQ episode:"+str(ep), end = "\r")
 		# sampling start state
 		s = getStratFromDist(p)
 
@@ -560,14 +564,20 @@ epsvec = [0.5, 0.6, 0.7, 0.8, 0.9]
 Pvec = None
 
 if __name__ == "__main__":
+	dataset_num = sys.argv[1]
+
 	FPLMTD_runtime = FPLMTDLite_runtime = DOBSS_runtime = RANDOM_runtime = RobustRL_runtime = 0
 	EXP3_runtime = BSSQ_runtime = PaddedExp3_runtime = SwitchingExp3_runtime = FPLGR_runtime = 0
 
 	# get switching costs, utilities, and vulnerabilities
-	sc = parse_switching()
-	parse_attacks()
-	def_util, att_util = parse_util()
-	vulset = parse_vulset()
+	sc = parse_switching(dataset_num)
+	parse_attacks(dataset_num)
+	def_util, att_util = parse_util(dataset_num)
+	vulset = parse_vulset(dataset_num)
+
+	print("Number of Configs: " + str(NUMCONFIGS))
+	print("Number of Attacks: " + str(NUMATTACKS))
+	print("Number of Attacker types: " + str(NUMTYPES))
 
 	# attacker type probability
 	Pvec = [1/NUMTYPES for i in range(NUMTYPES)]
@@ -590,7 +600,7 @@ if __name__ == "__main__":
 
 	utility = np.array([[0.0]*T for i in range(NUMSTRATS)])
 
-	for iter1 in range(MAX_ITER):
+	for iter in range(MAX_ITER):
 		FPLMTD_rhat = np.array([[0.0]*NUMATTACKS for i in range(NUMTYPES)])
 		FPLMTDLite_rhat = np.array([0.0]*NUMCONFIGS)
 
@@ -615,10 +625,8 @@ if __name__ == "__main__":
 		DOBSS_mixed_strat = DOBSS_mixed_strat_list[-1]
 
 		# get BSSQ x value
-		num_episodes = 10
-
 		start = time.time()
-		BSSQ_mixed_strat_list = getBSSQStrat(game_def_util, game_att_util, sc, [1/NUMCONFIGS]*NUMCONFIGS, Pvec, num_episodes)
+		BSSQ_mixed_strat_list = getBSSQStrat(game_def_util, game_att_util, sc, [1/NUMCONFIGS]*NUMCONFIGS, Pvec)
 		end = time.time()
 		# print(BSSQ_mixed_strat_list)	
 		BSSQ_runtime += (end - start)
@@ -628,7 +636,7 @@ if __name__ == "__main__":
 		strat[RobustRL] = int(np.random.random()*NUMCONFIGS)
 
 		for t in range(T):
-			print(str(iter1)+":"+str(t) + "\t", end = "\r")
+			print(str(iter)+":"+str(t) + " "*10, end = "\r")
 			
 			# get strategies (configs) from each method
 			strat[DOBSS] = getStratFromDist(DOBSS_mixed_strat)
@@ -708,7 +716,10 @@ if __name__ == "__main__":
 			end = time.time()
 			FPLMTDLite_runtime += (end - start)
 
+			start = time.time()
 			FPLGR_rhat = FPL_GR(FPLGR_rhat, strat[FPLGR], util[FPLGR])
+			end = time.time()
+			FPLGR_runtime += (end - start)
 
 
 			# EXP3 update using utilities and last EXP3_p
@@ -736,7 +747,7 @@ if __name__ == "__main__":
 			start = time.time()
 			updated_p = [0.0]*NUMCONFIGS
 			for c in range(NUMCONFIGS):
-				updated_p[c] += PADDING*PaddedExp3_p[c]
+				updated_p[c] += (PADDING*PaddedExp3_p[c])
 			updated_p[strat_old[PaddedExp3]] += (1-PADDING)
 			PaddedExp3_L[strat[PaddedExp3]] += (util[PaddedExp3] - scosts[PaddedExp3])/updated_p[strat[PaddedExp3]]
 			temp = np.sum([np.exp(EXP_ETA*PaddedExp3_L[c]) for c in range(NUMCONFIGS)])
@@ -754,39 +765,58 @@ if __name__ == "__main__":
 			end = time.time()
 			RobustRL_runtime += (end - start)
 
-	print("FPLMTD_Switch = ", FPLMTD_switch/MAX_ITER)
-	print("FPLMTDLite_Switch = ", FPLMTDLite_switch/MAX_ITER)
-	print("DOBSS_Switch = ", DOBSS_switch/MAX_ITER)
-	print("RANDOM_Switch = ", RANDOM_switch/MAX_ITER)
-	print("RobustRL_Switch = ", RobustRL_switch/MAX_ITER)
-	print("EXP3_Switch = ", EXP3_switch/MAX_ITER)
-	print("BSSQ_Switch = ", BSSQ_switch/MAX_ITER)
-	print("PaddedExp3_Switch = ", PaddedExp3_switch/MAX_ITER)
-	print("SwitchingExp3_Switch = ", SwitchingExp3_switch/MAX_ITER)
-	print("FPLGR_Switch = ", FPLGR_switch/MAX_ITER)
+		print("Iteration " + str(iter+1) + " over.")
+
+	print("\n")
+	stdout = sys.stdout
+	f_ov_out = open(OUT_DIR + str(dataset_num) + "overall_out_BestResponse.txt", 'w')
+	sys.stdout = f_ov_out
+
+	print(NUMCONFIGS)
+	print(NUMATTACKS)
+	print(NUMTYPES)
+
+	print("\n")
+	print("Average switches per iteration:")
+	print(FPLMTD_switch/MAX_ITER)
+	print(FPLMTDLite_switch/MAX_ITER)
+	print(DOBSS_switch/MAX_ITER)
+	print(RANDOM_switch/MAX_ITER)
+	print(RobustRL_switch/MAX_ITER)
+	print(EXP3_switch/MAX_ITER)
+	print(BSSQ_switch/MAX_ITER)
+	print(PaddedExp3_switch/MAX_ITER)
+	print(SwitchingExp3_switch/MAX_ITER)
+	print(FPLGR_switch/MAX_ITER)
 	print("\n")
 
-	print("FPLMTD Run-time = ", FPLMTD_runtime/MAX_ITER)
-	print("FPLMTDLite Run-time = ", FPLMTDLite_runtime/MAX_ITER)
-	print("DOBSS Run-time = ", DOBSS_runtime/MAX_ITER)
-	print("RANDOM Run-time = ", RANDOM_runtime/MAX_ITER)
-	print("RobustRL Run-time = ", RobustRL_runtime/MAX_ITER)
-	print("EXP3 Run-time = ", EXP3_runtime/MAX_ITER)
-	print("BSSQ Run-time = ", BSSQ_runtime/MAX_ITER)
-	print("PaddedExp3 Run-time = ", PaddedExp3_runtime/MAX_ITER)
-	print("SwitchingExp3 Run-time = ", SwitchingExp3_runtime/MAX_ITER)
-	print("FPLGR Run-time = ", FPLGR_runtime/MAX_ITER)
+	print("Average run-times per iteration:")
+	print(FPLMTD_runtime/MAX_ITER)
+	print(FPLMTDLite_runtime/MAX_ITER)
+	print(DOBSS_runtime/MAX_ITER)
+	print(RANDOM_runtime/MAX_ITER)
+	print(RobustRL_runtime/MAX_ITER)
+	print(EXP3_runtime/MAX_ITER)
+	print(BSSQ_runtime/MAX_ITER)
+	print(PaddedExp3_runtime/MAX_ITER)
+	print(SwitchingExp3_runtime/MAX_ITER)
+	print(FPLGR_runtime/MAX_ITER)
 	print("\n")
 
+	print("Average utilities per iteration:")
 	# FPLMTD, FPLMTDLite, DOBSS, RANDOM, RobustRL, EXP3, BSSQ sum of utilities
-	f_out = open(str(NUMCONFIGS) + "output_BestResponse.txt", "w")
+	f_out = open(OUT_DIR + str(dataset_num) + "output_BestResponse.txt", "a")
 	for i in range(NUMSTRATS):
 		# print(np.sum(utility[i, :])/MAX_ITER)
-		print(strats_list[i]+" Utility = " + str(np.sum(utility[i, :])/MAX_ITER))
+		print(str(np.sum(utility[i, :])/MAX_ITER))
 		for t in range(T):
 			f_out.write(str(utility[i, t]/MAX_ITER) + " ")
 		f_out.write("\n")
 	print("\n")
+
+	sys.stdout = stdout
+	f_ov_out.close()
+	f_out.close()
 
 
 

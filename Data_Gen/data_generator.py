@@ -9,7 +9,7 @@ def get_truncated_normal(mean=0, sd=1, low=0, upp=10):
     return truncnorm((low - mean) / sd, (upp - mean) / sd, loc=mean, scale=sd)
 
 if __name__ == "__main__":
-    for dataset_num in range(1, int(sys.argv[1])+1):
+    for dataset_num in range(int(sys.argv[1]), int(sys.argv[2]) + 1):
         print("Dataset " + str(dataset_num) + ":")
         attack_list = []
         attacker_util = []

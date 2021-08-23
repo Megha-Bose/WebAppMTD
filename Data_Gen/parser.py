@@ -1,5 +1,7 @@
 import numpy as np 
 
+DIR = "../Data/input/"
+
 attack_list = []
 attacker_util = []
 defender_util = []
@@ -44,7 +46,7 @@ for t in range(type_num):
 		if i not in attack_set:
 			attack_set.append(i)
 
-f_util = open("utilities.txt", "w")
+f_util = open(DIR + "0utilities.txt", "w")
 f_util.write(str(type_num)+"\n")
 
 for t in range(type_num):
@@ -73,7 +75,7 @@ f_util.close()
 for i in range(config_num):
 	vul_set[i] = list(set(vul_set[i]))
 
-f_vul = open("vulnerabilities.txt", "w")
+f_vul = open(DIR  + "0vulnerabilities.txt", "w")
 f_vul.write(str(config_num) + "\n")
 
 for i in range(config_num):
@@ -84,7 +86,7 @@ for i in range(config_num):
 
 f_vul.close()
 
-f_att = open("attacks.txt", "w")
+f_att = open(DIR + "0attacks.txt", "w")
 f_att.write(str(len(attack_set)) + "\n")
 
 for i in attack_set:

@@ -16,8 +16,10 @@ if __name__ == "__main__":
     attack_num = []
     type_num = []
 
-    n_datasets = int(sys.argv[1])+1
-    for dataset_num in range(n_datasets):
+    n_from = int(sys.argv[1])
+    n_to = int(sys.argv[2]) + 1
+
+    for dataset_num in range(n_from, n_to):
         f = open(DIR + str(dataset_num) + "overall_out_BestResponse.txt")
         config_num.append(int(f.readline()))
         attack_num.append(int(f.readline()))
@@ -58,13 +60,13 @@ if __name__ == "__main__":
 
     for strat in range(len(strats_list)):
         switch_arr = []
-        for d in range(n_datasets):
+        for d in range(n_from, n_to):
             switch_arr.append(switches_list[d][strat])
-        x = range(n_datasets)
+        x = range(n_from, n_to)
         y = switch_arr
         plt.xticks(np.arange(min(x), max(x)+1, 1.0))
         my_xticks = []
-        for d in range(n_datasets):
+        for d in range(n_from, n_to):
             my_xticks.append('Configs: ' + str(config_num[d]) + '\nAttacks: ' + str(attack_num[d]) + '\nTypes: ' + str(type_num[d]))        
         plt.xticks(x, my_xticks)
         plt.plot(x, y, label = strats_list[strat])
@@ -78,13 +80,13 @@ if __name__ == "__main__":
 
     for strat in range(len(strats_list)):
         runtime_arr = []
-        for d in range(n_datasets):
+        for d in range(n_from, n_to):
             runtime_arr.append(runtimes_list[d][strat])
-        x = range(n_datasets)
+        x = range(n_from, n_to)
         y = runtime_arr
         plt.xticks(np.arange(min(x), max(x)+1, 1.0))
         my_xticks = []
-        for d in range(n_datasets):
+        for d in range(n_from, n_to):
             my_xticks.append('Configs: ' + str(config_num[d]) + '\nAttacks: ' + str(attack_num[d]) + '\nTypes: ' + str(type_num[d]))        
         plt.xticks(x, my_xticks)
         plt.plot(x, y, label = strats_list[strat])
@@ -98,13 +100,13 @@ if __name__ == "__main__":
 
     for strat in range(len(strats_list)):
         util_arr = []
-        for d in range(n_datasets):
+        for d in range(n_from, n_to):
             util_arr.append(utils_list[d][strat])
-        x = range(n_datasets)
+        x = range(n_from, n_to)
         y = util_arr
         plt.xticks(np.arange(min(x), max(x)+1, 1.0))
         my_xticks = []
-        for d in range(n_datasets):
+        for d in range(n_from, n_to):
             my_xticks.append('Configs: ' + str(config_num[d]) + '\nAttacks: ' + str(attack_num[d]) + '\nTypes: ' + str(type_num[d]))
         plt.xticks(x, my_xticks)
         plt.plot(x, y, label = strats_list[strat])

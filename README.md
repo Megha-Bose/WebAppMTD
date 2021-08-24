@@ -26,6 +26,3 @@ There are three folders:
     - BR corresponds to Best Response (exactly the same as that of the FPL-UE paper) and fplue corresponds to an attacker whose strategy is decided by the FPL-UE algorithm. The rest of the code in these three files is the same: they correspond to ten defender strategies.
 
     - Run `compare_[attacker strategy].py n1 n2` to generate switches, runtime and utility graphs inside `graphs` folder for datasets `n1` to `n2` for an attacker strategy.
-
-
-P.S. Only Attacker Best Response has been updated till now. After verification, the code can be pasted in other files as well.

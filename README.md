@@ -19,13 +19,13 @@ There are three folders:
 3. The third folder is `Expts` and there are three important files here; the rest of them are just old files.
 
     - The three files are attacker_eps.py, attacker_BR.py and attacker_fplue.py
-    - Run them like `python3 attacker_BR.py [dataset number]` to generate output files for a dataset.
+    - Run them like `python3 attacker_BR.py n1 n2` to generate output files for datasets `n1` to `n2`.
 
     - These three files correspond to three different attacker strategies: eps corresponds to epsilon optimal -- given some epsilon, the attacker randomly chooses between all the strategies that achieve a (1-epsilon) \times optimal utility for that round. This type assumes knowledge about what move the defender makes. 
 
     - BR corresponds to Best Response (exactly the same as that of the FPL-UE paper) and fplue corresponds to an attacker whose strategy is decided by the FPL-UE algorithm. The rest of the code in these three files is the same: they correspond to ten defender strategies.
 
-    - Run `compare.py n1 n2` to generate switches, runtime and utility graphs for datasets `n1` to `n2`.
+    - Run `compare_[attacker strategy].py n1 n2` to generate switches, runtime and utility graphs inside `graphs` folder for datasets `n1` to `n2` for an attacker strategy.
 
 
 P.S. Only Attacker Best Response has been updated till now. After verification, the code can be pasted in other files as well.

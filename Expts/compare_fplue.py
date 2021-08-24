@@ -20,7 +20,7 @@ if __name__ == "__main__":
     n_to = int(sys.argv[2]) + 1
 
     for dataset_num in range(n_from, n_to):
-        f = open(DIR + str(dataset_num) + "overall_out_BestResponse.txt")
+        f = open(DIR + str(dataset_num) + "overall_out_fplue.txt")
         config_num.append(int(f.readline()))
         attack_num.append(int(f.readline()))
         type_num.append((f.readline()))
@@ -75,7 +75,7 @@ if __name__ == "__main__":
     plt.ylabel('Switches per iteration')
     plt.title('Switches')
     plt.legend(bbox_to_anchor=(1.05, 1))
-    plt.savefig('switches_graph.png', bbox_inches='tight')
+    plt.savefig('graphs/switch/switches_graph_fplue.png', bbox_inches='tight')
     plt.clf()
 
     for strat in range(len(strats_list)):
@@ -95,7 +95,7 @@ if __name__ == "__main__":
     plt.ylabel('Runtime per iteration')
     plt.title('Runtime')
     plt.legend(bbox_to_anchor=(1.05, 1))
-    plt.savefig('runtimes_graph.png', bbox_inches='tight')
+    plt.savefig('graphs/runtime/runtimes_graph_fplue.png', bbox_inches='tight')
     plt.clf()
 
     for strat in range(len(strats_list)):
@@ -115,7 +115,7 @@ if __name__ == "__main__":
     plt.ylabel('Utilities per iteration')
     plt.title('Utilities')
     plt.legend(bbox_to_anchor=(1.05, 1))
-    plt.savefig('utilities_graph.png', bbox_inches='tight')
+    plt.savefig('graphs/utility/utilities_graph_fplue.png', bbox_inches='tight')
 
     
         

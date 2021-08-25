@@ -26,6 +26,7 @@ FPL_ETA = np.sqrt(np.log(NUMCONFIGS)/(NUMCONFIGS*T)) # FPL Hyperparameter
 EXP_ETA = np.sqrt(2*np.log(NUMCONFIGS)/(NUMCONFIGS*T)) # EXP Hyperparameter
 
 
+
 NUMSTRATS = 10
 FPLMTD = 0
 FPLMTDLite = 1

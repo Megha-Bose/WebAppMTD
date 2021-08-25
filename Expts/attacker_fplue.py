@@ -25,6 +25,8 @@ PADDING = 1/(T**(1/3))
 FPL_ETA = np.sqrt(np.log(NUMCONFIGS)/(NUMCONFIGS*T)) # FPL Hyperparameter
 EXP_ETA = np.sqrt(2*np.log(NUMCONFIGS)/(NUMCONFIGS*T)) # EXP Hyperparameter
 
+ATTACKERFPL_ETA = np.sqrt((np.log(NUMCONFIGS)+1)/T)
+ATTACKERFPL_EPS = 1/T
 
 NUMSTRATS = 10
 FPLMTD = 0
@@ -275,7 +277,7 @@ def Attacker_GR(rhat, vdash, util):
 			v = int(np.random.random()*NUMCONFIGS)
 		else:
 			# FPL
-			rdash = r - np.random.exponential(FPL_ETA, NUMATTACKS)
+			rdash = r - np.random.exponential(ATTACKERFPL_ETA, NUMATTACKS)
 			v = np.argmax(rdash)
 		if(vdash == v):
 			l = i
@@ -298,10 +300,10 @@ def getAttackFPLUE(def_util, att_util, strat, P, vulset, rhat):
 
 	r = rhat.copy()
 	y = np.random.random()
-	if(y < EPSILON):
+	if(y < ATTACKERFPL_EPS):
 		v = int(np.random.random()*NUMCONFIGS)
 	else:
-		rdash = r[tau, :] - np.random.exponential(FPL_ETA, NUMATTACKS)
+		rdash = r[tau, :] - np.random.exponential(ATTACKERFPL_ETA, NUMATTACKS)
 		v = np.argmax(rdash)
 
 	util_a = 0

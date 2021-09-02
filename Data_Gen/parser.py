@@ -1,6 +1,6 @@
 import numpy as np 
 
-DIR = "../Data/input/"
+DIR = "../Data/input/general_sum/"
 
 attack_list = []
 attacker_util = []

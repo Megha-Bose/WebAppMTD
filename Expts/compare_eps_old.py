@@ -13,6 +13,18 @@ if __name__ == "__main__":
     n_from = int(sys.argv[1])
     n_to = int(sys.argv[2]) + 1
 
+    zero_sum_flag = 0
+    if len(sys.argv) > 3 and sys.argv[3] == '0':
+        zero_sum_flag = 1
+
+    DIR = "../Data/output/"
+    case = ''
+    if zero_sum_flag == 1:
+        case = 'zero_sum/'
+    else:
+        case = 'general_sum/'
+    DIR = DIR + case
+
     for eps in epsvec:
         switches_list = []
         runtimes_list = []
@@ -78,7 +90,7 @@ if __name__ == "__main__":
         plt.ylabel('Switches per iteration')
         plt.title('Switches')
         plt.legend(bbox_to_anchor=(1.05, 1))
-        plt.savefig('graphs/switch/switches_graph_eps_'+str(int(eps*100))+'.png', bbox_inches='tight')
+        plt.savefig(DIR + 'graphs/switch/switches_graph_eps_'+str(int(eps*100))+'.png', bbox_inches='tight')
         plt.clf()
 
         for strat in range(len(strats_list)):
@@ -98,7 +110,7 @@ if __name__ == "__main__":
         plt.ylabel('Runtime per iteration')
         plt.title('Runtime')
         plt.legend(bbox_to_anchor=(1.05, 1))
-        plt.savefig('graphs/runtime/runtimes_graph_eps_'+str(int(eps*100))+'.png', bbox_inches='tight')
+        plt.savefig(DIR + 'graphs/runtime/runtimes_graph_eps_'+str(int(eps*100))+'.png', bbox_inches='tight')
         plt.clf()
 
         for strat in range(len(strats_list)):
@@ -118,7 +130,7 @@ if __name__ == "__main__":
         plt.ylabel('Utilities per iteration')
         plt.title('Utilities')
         plt.legend(bbox_to_anchor=(1.05, 1))
-        plt.savefig('graphs/utility/utilities_graph_eps_'+str(int(eps*100))+'.png', bbox_inches='tight')
+        plt.savefig(DIR + 'graphs/utility/utilities_graph_eps_'+str(int(eps*100))+'.png', bbox_inches='tight')
         plt.clf()
 
     

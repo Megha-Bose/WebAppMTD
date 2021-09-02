@@ -1,23 +1,41 @@
 import sys
 import numpy as np
-import random
 from scipy.stats import truncnorm
 
+SEED = 2021
 DIR = "../Data/input/"
 
 def get_truncated_normal(mean=0, sd=1, low=0, upp=10):
     return truncnorm((low - mean) / sd, (upp - mean) / sd, loc=mean, scale=sd)
 
 if __name__ == "__main__":
-    for dataset_num in range(int(sys.argv[1]), int(sys.argv[2]) + 1):
+    dataset_from = int(sys.argv[1])
+    dataset_to = int(sys.argv[2]) + 1
+
+    n_sets = dataset_to - dataset_from
+
+    # seeding random number generator  for reproducability
+    rng = np.random.default_rng(SEED)
+
+    config_num_list = rng.integers(low=10, high=20, size=n_sets)
+    type_num_list = rng.integers(low=3, high=6, size=n_sets)
+    attack_num_list = rng.integers(low=500, high=800, size=n_sets)
+
+    for dataset_num in range(dataset_from, dataset_to):
+        indx = dataset_num - dataset_from
+        config_num = config_num_list[indx]
+        type_num = type_num_list[indx]
+        attack_num = attack_num_list[indx]
+
+        zero_sum_flag = 0
+        if len(sys.argv) > 3 and sys.argv[3] == '0':
+            zero_sum_flag = 1
+
         print("Dataset " + str(dataset_num) + ":")
         attack_list = []
         attacker_util = []
         defender_util = []
-
-        config_num = random.randint(10, 20)
-        type_num = random.randint(3, 6)
-        attack_num = random.randint(500, 800)
+        skill_set = []
 
         # list of all vulnerabilities
         vul_list = ['v'+str(i) for i in range(attack_num)]
@@ -30,19 +48,34 @@ if __name__ == "__main__":
         du = [0.0]*len(vul_list)
         au = [0.0]*len(vul_list)
 
-        for i in range(attack_num):
-            du[i] = -random.random() * 10.0
-            au[i] = random.random() * 10.0
+        DIR = "../Data/input/"
+
+        if zero_sum_flag == 1:
+            DIR = DIR + "zero_sum/"
+            for i in range(attack_num):
+                du[i] = -rng.random() * 10.0
+                au[i] = -du[i]
+        else:
+            DIR = DIR + "general_sum/"
+            for i in range(attack_num):
+                du[i] = -rng.random() * 10.0
+                au[i] = rng.random() * 10.0
 
 
         # update vulnerabilities
         for t in range(type_num):
+
+            # skill of attacker type
+            rv = get_truncated_normal(mean=0.5, sd=1, low=0.1, upp=1.0)
+            skill = rng.choice(rv.rvs(100))
+            skill_set.append(skill)
+
             # sampling attacks the attacker type can execute
-            # normal distribution with half of atttack_num as mean
-            rv = get_truncated_normal(mean=attack_num // 2, sd=50, low=240, upp=attack_num)
-            vul_num = int(random.choice(rv.rvs(100)))
+            # normal distribution with mean being proportional to attacker type skill
+            rv = get_truncated_normal(mean=attack_num * skill, sd=50, low=240, upp=attack_num)
+            vul_num = int(rng.choice(rv.rvs(100)))
             
-            cves = random.sample(vul_list, vul_num)
+            cves = (rng.choice(vul_list, vul_num)).tolist()
             cves.append('NO-OP\n')
 
             d_utils = [0.0]*len(cves)
@@ -55,7 +88,7 @@ if __name__ == "__main__":
                 for j in range(len(cves)):
                     # effective attack or not
                     P_eff = 0.05
-                    p = random.random()
+                    p = rng.random()
                     if p < P_eff:
                         du[j] = au[j] = 0
                     if du[j] != 0:
@@ -131,10 +164,16 @@ if __name__ == "__main__":
         f_sc = open(DIR + str(dataset_num) + "switching.txt", "w")
         for i in range(config_num):
             for i in range(config_num):
-                sc = round(random.random(), 1)
+                sc = round(rng.random(), 1)
                 f_sc.write(str(sc) + " ")
             f_sc.write("\n")  
         f_sc.close()
+
+        # attacker skills
+        f_sk = open(DIR + str(dataset_num) + "skills.txt", "w")
+        for i in range(type_num):
+            f_sk.write(str(skill_set[i]) + "\n") 
+        f_sk.close()
 
         print("\n")
 

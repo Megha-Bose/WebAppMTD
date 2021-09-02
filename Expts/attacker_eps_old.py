@@ -8,15 +8,16 @@ from DOBSS import *
 IN_DIR = "../Data/input/"
 OUT_DIR = "../Data/output/"
 
+SEED = 2021
 NUMTYPES = 3 # Attacker Types
 NUMATTACKS = 292 # Max no. of attacks
 NUMCONFIGS = 4
 MAX_ITER = 10
 T = 1000
-GAMMA = 0.5 # Exploration Parameter
+GAMMA = 0.25 # Exploration Parameter
 EPSILON = 0.1
-ALPHA = 0.1
-BSSQ_ALPHA = 0.1
+ALPHA = 0.0
+BSSQ_ALPHA = 0.4
 DISCOUNT_FACTOR = 0.8
 M = 1000000
 Lmax = 1000
@@ -40,7 +41,7 @@ FPLGR = 9
 
 # returns defender and attacker utilities
 def parse_util(dataset_num):
-	global NUMTYPES
+	global NUMTYPES, IN_DIR
 	def_util = []
 	att_util = []
 	f = open(IN_DIR + str(dataset_num) + "utilities.txt", "r")
@@ -60,7 +61,7 @@ def parse_util(dataset_num):
 
 # get number of attacks
 def parse_attacks(dataset_num):
-	global NUMATTACKS
+	global NUMATTACKS, IN_DIR
 	f = open(IN_DIR + str(dataset_num) + "attacks.txt", "r")
 	y = f.readline()
 	NUMATTACKS = int(y)
@@ -68,7 +69,7 @@ def parse_attacks(dataset_num):
 
 # returns 0-1 vulnerabilities 2D matrix for (config, attack)
 def parse_vulset(dataset_num):
-	global NUMCONFIGS, NUMATTACKS
+	global NUMCONFIGS, NUMATTACKS, IN_DIR
 	vul_set = []
 	f = open(IN_DIR + str(dataset_num) + "vulnerabilities.txt", "r")
 	y = f.readline()
@@ -85,7 +86,7 @@ def parse_vulset(dataset_num):
 
 # returns switching cost 2D matrix
 def parse_switching(dataset_num):
-	global NUMCONFIGS
+	global NUMCONFIGS, IN_DIR
 	sc = []
 	f = open(IN_DIR + str(dataset_num) + "switching.txt", "r")
 
@@ -116,8 +117,8 @@ def parse_game_utils(def_util, att_util, vul_set):
 
 
 # get strategy from distribution
-def getStratFromDist(x):
-	y = np.random.random()
+def getStratFromDist(x, rng):
+	y = rng.random()
 	for i in range(len(x)):
 		if(y <= x[i]):
 			return i
@@ -126,11 +127,11 @@ def getStratFromDist(x):
 
  
 # returns FPL strategy
-def getFPLMTDStrat(r, s, old_strat, vulset, P, t):
+def getFPLMTDStrat(r, s, old_strat, vulset, P, t, rng):
 	# exploration
-	gamma = np.random.random()
+	gamma = rng.random()
 	if(gamma <= GAMMA):
-		return int(np.random.random()*NUMCONFIGS)
+		return int(rng.random()*NUMCONFIGS)
 
 	# reward estimates
 	rhat = r.copy()
@@ -140,7 +141,7 @@ def getFPLMTDStrat(r, s, old_strat, vulset, P, t):
 	# adding perturbation
 	for tau in range(NUMTYPES):
 		for a in range(NUMATTACKS):
-			rhat[tau, a] = rhat[tau, a] - np.random.exponential(1/FPL_ETA)
+			rhat[tau, a] = rhat[tau, a] - rng.exponential(1/FPL_ETA)
 
 	# considering utility for attacks that give minimum reward
 	# while considering attacker type probability
@@ -163,17 +164,17 @@ def getFPLMTDStrat(r, s, old_strat, vulset, P, t):
 
 
 # returns FPLMTD strategy
-def getFPLMTDLiteStrat(r, s, old_strat, t):
+def getFPLMTDLiteStrat(r, s, old_strat, t, rng):
 	# exploration
-	gamma = np.random.random()
+	gamma = rng.random()
 	if(gamma <= GAMMA):
-		return int(np.random.random()*NUMCONFIGS)
+		return int(rng.random()*NUMCONFIGS)
 	rhat = r.copy()
 	shat = s.copy()
 
 	# adding perturbation
 	for c in range(NUMCONFIGS):
-		rhat[c] -= np.random.exponential(1/FPL_ETA)
+		rhat[c] -= rng.exponential(1/FPL_ETA)
 
 	if(old_strat != -1):
 		rhat[old_strat] /= np.exp(-ALPHA)
@@ -185,20 +186,20 @@ def getFPLMTDLiteStrat(r, s, old_strat, t):
 	return np.argmax(new_u)
 
 # returns FPL+GR strategy
-def getFPLGRStrat(r):
+def getFPLGRStrat(r, rng):
 	rhat = r.copy()
 	for c in range(NUMCONFIGS):
-		rhat[c] -= np.random.exponential(1/FPL_ETA)
+		rhat[c] -= rng.exponential(1/FPL_ETA)
 	return np.argmax(rhat)
 
 # update reward estimates using GR for FPL
-def FPLMTD_GR(r, old_strat, strat, vulset, P, util, attack, tau, switch_costs, t):
+def FPLMTD_GR(r, old_strat, strat, vulset, P, util, attack, tau, switch_costs, t, rng):
 	rhat = np.copy(r)
 	l = 1
 	Kr = Lmax
 	strat_list = []
 	while(l < Lmax):
-		strat2 = getFPLMTDStrat(rhat, switch_costs, old_strat, vulset, P, t)
+		strat2 = getFPLMTDStrat(rhat, switch_costs, old_strat, vulset, P, t, rng)
 		strat_list.append(strat2)
 		if(((vulset[strat2, attack] == 1) & (Kr > l))|(util == 0)):
 			Kr = l
@@ -209,22 +210,22 @@ def FPLMTD_GR(r, old_strat, strat, vulset, P, util, attack, tau, switch_costs, t
 	return rhat
 
 # update reward estimates using GR for FPL lite
-def FPLMTDLite_GR(r, old_strat, strat, util, switch_costs, t):
+def FPLMTDLite_GR(r, old_strat, strat, util, switch_costs, t, rng):
 	rhat = np.copy(r)
 	l = 1
 	while(l < Lmax):
-		strat2 = getFPLMTDLiteStrat(rhat, switch_costs, old_strat, t)
+		strat2 = getFPLMTDLiteStrat(rhat, switch_costs, old_strat, t, rng)
 		if(strat2 == strat):
 			break
 		l+=1
 	rhat[strat]+= util*l
 	return rhat
 
-def FPL_GR(r, strat, util):
+def FPL_GR(r, strat, util, rng):
 	rhat = np.copy(r)
 	l = 1
 	while(l < Lmax):
-		strat2 = getFPLGRStrat(rhat)
+		strat2 = getFPLGRStrat(rhat, rng)
 		if(strat2 == strat):
 			break
 		l+=1
@@ -232,9 +233,9 @@ def FPL_GR(r, strat, util):
 	return rhat
 
 # returns RobustRL strategy
-def getRobustRLStrat(movelist, utillist):
-	if(np.random.random()< EPSILON):
-		return int(np.random.random()*NUMCONFIGS)
+def getRobustRLStrat(movelist, utillist, rng):
+	if(rng.random()< EPSILON):
+		return int(rng.random()*NUMCONFIGS)
 	l = len(movelist)
 	max_util = [-M]*NUMCONFIGS
 	for i in range(l):
@@ -243,39 +244,39 @@ def getRobustRLStrat(movelist, utillist):
 	return np.argmin(max_util)
 
 # samples strategy sequentially using EXP3 from p values
-def getEXP3Strat(p):
-	y = np.random.random()
+def getEXP3Strat(p, rng):
+	y = rng.random()
 	for c in range(NUMCONFIGS):
 		if(y < p[c]):
 			return c
 		y -= p[c]
 	return NUMCONFIGS - 1
 
-def getPaddedExp3Strat(p):
-	z = np.random.random()
+def getPaddedExp3Strat(p, rng):
+	z = rng.random()
 	if(z < PADDING):
-		y = np.random.random()
+		y = rng.random()
 		for c in range(NUMCONFIGS):
 			if(y < p[c]):
 				return c
 			y -= p[c]
 		return NUMCONFIGS - 1
-	return int(np.random.random()*NUMCONFIGS)
+	return int(rng.random()*NUMCONFIGS)
 
 
 # using GR to update attacker reward estimates for FPL-UE
-def Attacker_GR(rhat, vdash, util):
+def Attacker_GR(rhat, vdash, util, rng):
 	r = rhat.copy()
 	i = 1
 	l = Lmax # cap value
 	while(i < Lmax):
-		y = np.random.random()
+		y = rng.random()
 		if(y < EPSILON):
 			# exploration
-			v = int(np.random.random()*NUMCONFIGS)
+			v = int(rng.random()*NUMCONFIGS)
 		else:
 			# FPL
-			rdash = r - np.random.exponential(FPL_ETA, NUMATTACKS)
+			rdash = r - rng.exponential(FPL_ETA, NUMATTACKS)
 			v = np.argmax(rdash)
 		if(vdash == v):
 			l = i
@@ -285,8 +286,8 @@ def Attacker_GR(rhat, vdash, util):
 	return r
 
 
-def getAttackEps(def_util, att_util, strat, P, eps, vulset):
-	y = np.random.random()
+def getAttackEps(def_util, att_util, strat, P, eps, vulset, rng):
+	y = rng.random()
 	tau = NUMTYPES -1
 	for i in range(NUMTYPES):
 		if(y < P[i]):
@@ -300,7 +301,7 @@ def getAttackEps(def_util, att_util, strat, P, eps, vulset):
 	for a in range(NUMATTACKS):
 		if(att[a] >= eps*max_util):
 			att_list.append(a)
-	random_ind = int(np.random.random()*len(att_list))
+	random_ind = int(rng.random()*len(att_list))
 	attack = att_list[random_ind]
 	util = 0
 	if(vulset[strat, attack] == 1):
@@ -313,8 +314,27 @@ epsvec = [0.5, 0.6, 0.7, 0.8, 0.9]
 Pvec = [0.15, 0.35, 0.5]
 
 if __name__ == "__main__":
+
+	zero_sum_flag = 0
+	if len(sys.argv) > 3 and sys.argv[3] == '0':
+		zero_sum_flag = 1
+
+	IN_DIR = "../Data/input/"
+	OUT_DIR = "../Data/output/"
+	case = ''
+	if zero_sum_flag == 1:
+		case = 'zero_sum/'
+	else:
+		case = 'general_sum/'
+	IN_DIR = IN_DIR + case
+	OUT_DIR = OUT_DIR + case
+
 	for dataset_num in range(int(sys.argv[1]), int(sys.argv[2]) + 1):
 		print("Dataset: " + str(dataset_num))
+
+		# seeding random number generator  for reproducability
+		rng = np.random.default_rng(SEED)
+
 		FPLMTD_runtime = FPLMTDLite_runtime = DOBSS_runtime = RANDOM_runtime = RobustRL_runtime = 0
 		EXP3_runtime = BSSQ_runtime = PaddedExp3_runtime = SwitchingExp3_runtime = FPLGR_runtime = 0
 
@@ -325,7 +345,13 @@ if __name__ == "__main__":
 		vulset = parse_vulset(dataset_num)
 
 		# attacker type probability
-		Pvec = [1/NUMTYPES for i in range(NUMTYPES)]
+		Pvec = []
+		psum = 0.0
+		for tau in range(NUMTYPES):
+			Pvec.append(rng.random())
+			psum += Pvec[tau]
+		for tau in range(NUMTYPES):
+			Pvec[tau] = Pvec[tau] / psum
 
 		game_def_util, game_att_util = parse_game_utils(def_util, att_util, vulset)
 
@@ -373,7 +399,7 @@ if __name__ == "__main__":
 
 				# get BSSQ x value
 				start = time.time()
-				BSSQ_mixed_strat_list = getBSSQStrat(game_def_util, game_att_util, sc, [1/NUMCONFIGS]*NUMCONFIGS, Pvec, NUMCONFIGS, NUMATTACKS, NUMTYPES, BSSQ_ALPHA, DISCOUNT_FACTOR, M)
+				BSSQ_mixed_strat_list = getBSSQStrat(game_def_util, game_att_util, sc, [1/NUMCONFIGS]*NUMCONFIGS, Pvec, NUMCONFIGS, NUMATTACKS, NUMTYPES, BSSQ_ALPHA, DISCOUNT_FACTOR, M, rng)
 				end = time.time()
 				# print(BSSQ_mixed_strat_list)	
 				BSSQ_runtime += (end - start)
@@ -381,7 +407,7 @@ if __name__ == "__main__":
 				BSSQ_mixed_strat = BSSQ_mixed_strat_list[-1]
 
 				start = time.time()
-				strat[RobustRL] = int(np.random.random()*NUMCONFIGS)
+				strat[RobustRL] = int(rng.random()*NUMCONFIGS)
 				end = time.time()
 				RobustRL_runtime += (end - start)
 				
@@ -390,49 +416,49 @@ if __name__ == "__main__":
 				
 					# get strategies (configs) from each method
 					start = time.time()
-					strat[DOBSS] = getStratFromDist(DOBSS_mixed_strat)
+					strat[DOBSS] = getStratFromDist(DOBSS_mixed_strat, rng)
 					end = time.time()
 					DOBSS_runtime += (end - start)
 
 					start = time.time()
-					strat[RANDOM] = int(np.random.random()*NUMCONFIGS)
+					strat[RANDOM] = int(rng.random()*NUMCONFIGS)
 					end = time.time()
 					RANDOM_runtime += (end - start)
 
 					start = time.time()
-					strat[FPLMTD] = getFPLMTDStrat(FPLMTD_rhat, sc, strat_old[FPLMTD], vulset, Pvec, t)
+					strat[FPLMTD] = getFPLMTDStrat(FPLMTD_rhat, sc, strat_old[FPLMTD], vulset, Pvec, t, rng)
 					end = time.time()
 					FPLMTD_runtime += (end - start)
 
 					start = time.time()
-					strat[FPLMTDLite] = getFPLMTDLiteStrat(FPLMTDLite_rhat, sc, strat_old[FPLMTDLite], t)
+					strat[FPLMTDLite] = getFPLMTDLiteStrat(FPLMTDLite_rhat, sc, strat_old[FPLMTDLite], t, rng)
 					end = time.time()
 					FPLMTDLite_runtime += (end - start)
 
 					start = time.time()
-					strat[EXP3] = getEXP3Strat(EXP3_p)
+					strat[EXP3] = getEXP3Strat(EXP3_p, rng)
 					end = time.time()
 					EXP3_runtime += (end - start)
 
 					start = time.time()
-					strat[PaddedExp3] = getPaddedExp3Strat(PaddedExp3_p)
+					strat[PaddedExp3] = getPaddedExp3Strat(PaddedExp3_p, rng)
 					end = time.time()
 					PaddedExp3_runtime += (end - start)
 
 					if(t%2 == 0):
 						start = time.time()
-						strat[SwitchingExp3] = getEXP3Strat(SwitchingExp3_p)
+						strat[SwitchingExp3] = getEXP3Strat(SwitchingExp3_p, rng)
 						end = time.time()
 						SwitchingExp3_runtime += (end - start)
 
 					start = time.time()
-					strat[FPLGR] = getFPLGRStrat(FPLGR_rhat)
+					strat[FPLGR] = getFPLGRStrat(FPLGR_rhat, rng)
 					end = time.time()
 					FPLMTD_runtime += (end - start)
 
 					# get mixed strategy for BSSQ
 					start = time.time()
-					strat[BSSQ] = getStratFromDist(BSSQ_mixed_strat)			
+					strat[BSSQ] = getStratFromDist(BSSQ_mixed_strat, rng)			
 					end = time.time()
 					BSSQ_runtime += (end - start)
 
@@ -460,7 +486,7 @@ if __name__ == "__main__":
 					# calculate ultilities using strategy from each method by simulating attack
 					util, typ, attack, scosts = [0.0]*NUMSTRATS, [0]*NUMSTRATS, [0]*NUMSTRATS, [0.0]*NUMSTRATS
 					for i in range(NUMSTRATS):
-						util[i], typ[i], attack[i] = getAttackEps(def_util, att_util, strat[i], Pvec, eps, vulset)
+						util[i], typ[i], attack[i] = getAttackEps(def_util, att_util, strat[i], Pvec, eps, vulset, rng)
 						
 						if(strat_old[i]!=-1):
 							scosts[i] = sc[strat_old[i], strat[i]]
@@ -475,17 +501,17 @@ if __name__ == "__main__":
 
 					# Reward estimates using Geometric Resampling
 					start = time.time()
-					FPLMTD_rhat = FPLMTD_GR(FPLMTD_rhat, strat_old[FPLMTD], strat[FPLMTD], vulset, Pvec, util[FPLMTD], attack[FPLMTD], typ[FPLMTD], sc, t)
+					FPLMTD_rhat = FPLMTD_GR(FPLMTD_rhat, strat_old[FPLMTD], strat[FPLMTD], vulset, Pvec, util[FPLMTD], attack[FPLMTD], typ[FPLMTD], sc, t, rng)
 					end = time.time()
 					FPLMTD_runtime += (end - start)
 
 					start = time.time()
-					FPLMTDLite_rhat = FPLMTDLite_GR(FPLMTDLite_rhat, strat_old[FPLMTDLite], strat[FPLMTDLite], util[FPLMTDLite], sc, t)
+					FPLMTDLite_rhat = FPLMTDLite_GR(FPLMTDLite_rhat, strat_old[FPLMTDLite], strat[FPLMTDLite], util[FPLMTDLite], sc, t, rng)
 					end = time.time()
 					FPLMTDLite_runtime += (end - start)
 
 					start = time.time()
-					FPLGR_rhat = FPL_GR(FPLGR_rhat, strat[FPLGR], util[FPLGR])
+					FPLGR_rhat = FPL_GR(FPLGR_rhat, strat[FPLGR], util[FPLGR], rng)
 					end = time.time()
 					FPLGR_runtime += (end - start)
 
@@ -573,7 +599,7 @@ if __name__ == "__main__":
 
 			print("Average utilities per iteration:")
 			# FPLMTD, FPLMTDLite, DOBSS, RANDOM, RobustRL, EXP3, BSSQ sum of utilities
-			f_out = open(OUT_DIR + str(dataset_num) + "output_eps_"+str(int(eps*100))+".txt", "a")
+			f_out = open(OUT_DIR + str(dataset_num) + "output_eps_"+str(int(eps*100))+".txt", "w")
 			for i in range(NUMSTRATS):
 				# print(np.sum(utility[i, :])/MAX_ITER)
 				print(str(np.sum(utility[i, :])/MAX_ITER))

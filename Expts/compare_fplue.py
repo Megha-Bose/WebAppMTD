@@ -19,6 +19,18 @@ if __name__ == "__main__":
     n_from = int(sys.argv[1])
     n_to = int(sys.argv[2]) + 1
 
+    zero_sum_flag = 0
+    if len(sys.argv) > 3 and sys.argv[3] == '0':
+        zero_sum_flag = 1
+
+    DIR = "../Data/output/"
+    case = ''
+    if zero_sum_flag == 1:
+        case = 'zero_sum/'
+    else:
+        case = 'general_sum/'
+    DIR = DIR + case
+
     for dataset_num in range(n_from, n_to):
         f = open(DIR + str(dataset_num) + "overall_out_fplue.txt")
         config_num.append(int(f.readline()))
@@ -75,7 +87,7 @@ if __name__ == "__main__":
     plt.ylabel('Switches per iteration')
     plt.title('Switches')
     plt.legend(bbox_to_anchor=(1.05, 1))
-    plt.savefig('graphs/switch/switches_graph_fplue.png', bbox_inches='tight')
+    plt.savefig(DIR + 'graphs/switch/switches_graph_fplue.png', bbox_inches='tight')
     plt.clf()
 
     for strat in range(len(strats_list)):
@@ -95,7 +107,7 @@ if __name__ == "__main__":
     plt.ylabel('Runtime per iteration')
     plt.title('Runtime')
     plt.legend(bbox_to_anchor=(1.05, 1))
-    plt.savefig('graphs/runtime/runtimes_graph_fplue.png', bbox_inches='tight')
+    plt.savefig(DIR + 'graphs/runtime/runtimes_graph_fplue.png', bbox_inches='tight')
     plt.clf()
 
     for strat in range(len(strats_list)):
@@ -115,7 +127,7 @@ if __name__ == "__main__":
     plt.ylabel('Utilities per iteration')
     plt.title('Utilities')
     plt.legend(bbox_to_anchor=(1.05, 1))
-    plt.savefig('graphs/utility/utilities_graph_fplue.png', bbox_inches='tight')
+    plt.savefig(DIR + 'graphs/utility/utilities_graph_fplue.png', bbox_inches='tight')
 
     
         

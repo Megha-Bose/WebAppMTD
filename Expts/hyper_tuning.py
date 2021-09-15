@@ -382,13 +382,21 @@ if __name__ == "__main__":
 
 
 	print("Hyperparameter Selection for FPLMaxMin:")
-	hyper_iter = np.argmax(hyper_value_maxmin)
-	print("eta = " + str(MTD_eta[int(hyper_iter % len(MTD_eta))]))
-	print("gamma = " + str(MTD_gamma[int(hyper_iter/len(MTD_eta))]))	
+	for i in range(10):
+		print("Rank "+str(i+1))
+		hyper_iter = np.argmax(hyper_value_maxmin)
+		print("value = "+str(hyper_value_maxmin[hyper_iter]))
+		print("eta = " + str(MTD_eta[int(hyper_iter % len(MTD_eta))]))
+		print("gamma = " + str(MTD_gamma[int(hyper_iter/len(MTD_eta))]))	
+		hyper_value_maxmin[hyper_iter] = np.min(hyper_value_maxmin)
 
 	print("Hyperparameter Selection for FPLMTD:")
-	hyper_iter = np.argmax(hyper_value_mtd)
-	print("eta = " + str(MTD_eta[int(hyper_iter % len(MTD_eta))]))
-	print("gamma = " + str(MTD_gamma[int(hyper_iter/len(MTD_eta))]))
+	for i in range(10):
+		print("Rank "+str(i+1))
+		hyper_iter = np.argmax(hyper_value_mtd)
+		print("value = "+str(hyper_value_mtd[hyper_iter]))
+		print("eta = " + str(MTD_eta[int(hyper_iter % len(MTD_eta))]))
+		print("gamma = " + str(MTD_gamma[int(hyper_iter/len(MTD_eta))]))	
+		hyper_value_mtd[hyper_iter] = np.min(hyper_value_mtd)
 
 

@@ -275,7 +275,7 @@ def Attacker_GR(rhat, vdash, util, rng):
 		y = rng.random()
 		if(y < EPSILON):
 			# exploration
-			v = int(rng.random()*NUMCONFIGS)
+			v = int(rng.random()*NUMATTACKS)
 		else:
 			# FPL
 			rdash = r - rng.exponential(ATTACKERFPL_ETA, NUMATTACKS)
@@ -302,7 +302,7 @@ def getAttackFPLUE(def_util, att_util, strat, P, vulset, rhat, rng):
 	r = rhat.copy()
 	y = rng.random()
 	if(y < ATTACKERFPL_EPS):
-		v = int(rng.random()*NUMCONFIGS)
+		v = int(rng.random()*NUMATTACKS)
 	else:
 		rdash = r[tau, :] - rng.exponential(ATTACKERFPL_ETA, NUMATTACKS)
 		v = np.argmax(rdash)

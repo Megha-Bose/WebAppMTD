@@ -1,7 +1,7 @@
 import gurobipy as gp
 import numpy as np
 
-n_episodes = 10
+n_episodes = 100
 max_eps_len = 10
 start_eps_val = 0.1
 end_eps_val = 0.05
@@ -57,6 +57,8 @@ def getSSEqMIQP(s, game_def_qval, game_att_qval, NUMCONFIGS, NUMATTACKS, NUMTYPE
 			q_sum.add(q[tau, a])
 		m.addConstr(q_sum==1)
 
+	m.update()
+
 	# Add constraints to make attacker select dominant pure strategy
 	for tau in range(NUMTYPES):
 		for a in range(NUMATTACKS):
@@ -66,6 +68,8 @@ def getSSEqMIQP(s, game_def_qval, game_att_qval, NUMCONFIGS, NUMATTACKS, NUMTYPE
 				val.add(float(game_att_qval[tau][s][sdash][a]) * x[sdash], -1.0)
 			m.addConstr(val >= 0)
 			m.addConstr(val <= (1 - q[tau, a]) * M)
+
+	m.update()
 
 	# set objective funcion
 	m.setObjective(obj, gp.GRB.MAXIMIZE)
@@ -224,7 +228,7 @@ def getBSSQStrat(def_util, att_util, sc, p, P, NUMCONFIGS, NUMATTACKS, NUMTYPES,
 	decay_val = (end_eps_val / start_eps_val) ** (1 / max_eps_len)
 
 	for ep in range(n_episodes):
-		print("BSSQ episode:"+str(ep), end = "\r")
+		# print("BSSQ episode:"+str(ep), end = "\r")
 		# sampling start state
 		s = getValFromDist(p, rng)
 

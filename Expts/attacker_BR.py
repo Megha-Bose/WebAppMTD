@@ -14,17 +14,16 @@ NUMATTACKS = 1
 NUMCONFIGS = 1
 MAX_ITER = 10
 T = 1000
-GAMMA = 0.01 
-ETA = 0.05
+MaxMin_GAMMA = 0.001 #MaxMin Hyper-parameters
+MaxMin_ETA = 0.06
+MTD_GAMMA = 0.006 #MTD Parameters
+MTD_ETA = 0.01
 EPSILON = 0.1
-BSSQ_ALPHA = 0.4
+BSSQ_ALPHA = 0.2
 DISCOUNT_FACTOR = 0.8
 M = 1000000
 Lmax = 1000
 PADDING = 1/(T**(1/3))
-
-FPL_ETA = np.sqrt(np.log(NUMCONFIGS)/(NUMCONFIGS*T)) # FPL Hyperparameter
-EXP_ETA = np.sqrt(2*np.log(NUMCONFIGS)/(NUMCONFIGS*T)) # EXP Hyperparameter
 
 
 NUMSTRATS = 10
@@ -130,7 +129,7 @@ def getStratFromDist(x, rng):
 def getFPLMaxMinStrat(r, n_vec, s, old_strat, vulset, P, t, rng):
 	# exploration
 	gamma1 = rng.random()
-	if(gamma1 <= GAMMA):
+	if(gamma1 <= MaxMin_GAMMA):
 		return int(rng.random()*NUMCONFIGS)
 
 	# reward estimates
@@ -147,7 +146,7 @@ def getFPLMaxMinStrat(r, n_vec, s, old_strat, vulset, P, t, rng):
 	# adding perturbation
 	for tau in range(NUMTYPES):
 		for a in range(NUMATTACKS):
-			rhat[tau, a] = rhat[tau, a] - rng.exponential(ETA)
+			rhat[tau, a] = rhat[tau, a] - rng.exponential(MaxMin_ETA)
 
 	# considering utility for attacks that give minimum reward
 	# while considering attacker type probability
@@ -170,7 +169,7 @@ def getFPLMaxMinStrat(r, n_vec, s, old_strat, vulset, P, t, rng):
 def getFPLMTDStrat(r, s, old_strat, t, rng):
 	# exploration
 	gamma1 = rng.random()
-	if(gamma1 <= GAMMA):
+	if(gamma1 <= MTD_GAMMA):
 		# print("Random")
 		return int(rng.random()*NUMCONFIGS)
 	rhat = r.copy()
@@ -180,7 +179,7 @@ def getFPLMTDStrat(r, s, old_strat, t, rng):
 		rhat = rhat/t
 	# adding perturbation
 	for c in range(NUMCONFIGS):
-		rhat[c] -= rng.exponential(ETA)
+		rhat[c] -= rng.exponential(MTD_ETA)
 	# net reward
 	new_u = [rhat[c] - shat[old_strat, c] for c in range(NUMCONFIGS)]
 	# return the best / leader strategy
@@ -349,7 +348,7 @@ if __name__ == "__main__":
 	OUT_DIR = OUT_DIR + case
 
 	for dataset_num in range(int(sys.argv[1]), int(sys.argv[2]) + 1):
-		print("Dataset: " + str(dataset_num))
+		# print("Dataset: " + str(dataset_num))
 
 		# seeding random number generator  for reproducability
 		rng = np.random.default_rng(SEED)
@@ -376,6 +375,8 @@ if __name__ == "__main__":
 			sc[c, c] = 0
 
 		# Pvec = [1/NUMTYPES for i in range(NUMTYPES)]
+		FPL_ETA = np.sqrt(np.log(NUMCONFIGS)/(NUMCONFIGS*T)) # FPL Hyperparameter
+		EXP_ETA = np.sqrt(2*np.log(NUMCONFIGS)/(NUMCONFIGS*T)) # EXP Hyperparameter
 
 		game_def_util, game_att_util = parse_game_utils(def_util, att_util, vulset)
 
@@ -391,7 +392,7 @@ if __name__ == "__main__":
 
 		switch = [0]*NUMSTRATS
 
-		utility = np.array([[0.0]*T for i in range(NUMSTRATS)])
+		utility = [np.array([[0.0]*T for i in range(MAX_ITER)]) for iter in range(NUMSTRATS)]
 
 		for iter in range(MAX_ITER):
 			FPLMaxMin_rhat = np.array([[0.0]*NUMATTACKS for i in range(NUMTYPES)])
@@ -497,7 +498,7 @@ if __name__ == "__main__":
 					
 					if(strat_old[i]!=-1):
 						scosts[i] = sc[strat_old[i], strat[i]]
-					utility[i, t] += (util[i] - scosts[i])
+					utility[i][iter, t] = (util[i] - scosts[i])
 
 
 				#print(util[0])
@@ -576,7 +577,7 @@ if __name__ == "__main__":
 
 			# print("Iteration " + str(iter+1) + " over.")
 
-		print("\n")
+		# print("\n")
 		stdout = sys.stdout
 		f_ov_out = open(OUT_DIR + str(dataset_num) + "overall_out_BestResponse.txt", 'w')
 		sys.stdout = f_ov_out
@@ -609,10 +610,13 @@ if __name__ == "__main__":
 		f_out = open(OUT_DIR + str(dataset_num) + "output_BestResponse.txt", "w")
 		for i in range(NUMSTRATS):
 			# print(np.sum(utility[i, :])/MAX_ITER)
-			print(str(np.sum(utility[i, :])/MAX_ITER))
-			for t in range(T):
-				f_out.write(str(utility[i, t]/MAX_ITER) + " ")
-			f_out.write("\n")
+			print(str(np.sum(utility[i])/MAX_ITER))
+			f_out.write("Strat "+str(i) + "\n")
+			for iter in range(MAX_ITER):
+				f_out.write("iter " + str(iter) + "\n")
+				for t in range(T):
+					f_out.write(str(utility[i][iter, t]/MAX_ITER) + " ")
+				f_out.write("\n")
 		print("\n")
 
 		sys.stdout = stdout

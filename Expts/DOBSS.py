@@ -174,3 +174,76 @@ def getDOBSSStrat(game_def_util, game_att_util, sc, Pvec, DOBSS_strat, NUMCONFIG
 		soln_x.append(x[c].X)
 	return soln_x
 
+# returns n values if solution to MIQP exists given a DOBSS strategy
+def getStackelbergSolution(game_def_util, game_att_util, Pvec, NUMCONFIGS, NUMATTACKS, NUMTYPES, M):
+	m = gp.Model("dobss_attack")
+
+	m.setParam('OutputFlag', 0)
+	m.setParam('LogFile', '')
+	m.setParam('LogToConsole', 0)
+
+	obj = gp.QuadExpr()
+
+	# defender mixed strategy
+	x = {i: m.addVar(lb=0, ub=1, vtype=gp.GRB.CONTINUOUS, name='x_'+str(i)) for i in range(NUMCONFIGS)}
+	m.update()
+
+	# pure strategies for (attacker type, attack)
+	n = {(i, j): m.addVar(lb=0, ub=1, vtype=gp.GRB.INTEGER, name='n_'+str(i)+'_'+str(j)) for i in range(NUMTYPES) for j in range(NUMATTACKS)}
+	m.update()
+
+	# value of attacker's pure strategy
+	v = {i: m.addVar(lb=-gp.GRB.INFINITY, ub=gp.GRB.INFINITY, vtype=gp.GRB.CONTINUOUS, name='v_'+str(i)) for i in range(NUMTYPES)}
+	m.update()
+
+	# Σx = 1
+	x_sum = gp.LinExpr()
+	for i in range(NUMCONFIGS):
+		x_sum.add(x[i])
+	m.addConstr(x_sum == 1)
+	m.update()
+
+	# Σn = 1
+	for tau in range(NUMTYPES):
+		n_sum = gp.LinExpr()
+		for a in range(NUMATTACKS):
+			n_sum.add(n[tau, a])
+		m.addConstr(n_sum == 1)
+	m.update()
+
+	# value constraints 
+	for tau in range(NUMTYPES):
+		for a in range(NUMATTACKS):
+			val = gp.LinExpr()
+			val.add(v[tau])
+			for c in range(NUMCONFIGS):
+				val.add(game_att_util[tau][c][a] * x[c], -1.0)
+			m.addConstr(val >= 0)
+			m.addConstr(val <= (1 - n[tau, a]) * M)
+
+
+	# maximise total reward - switching cost
+
+	# Update objective function
+	for tau in range(NUMTYPES):
+		for c in range(NUMCONFIGS):
+			for a in range(NUMATTACKS):
+				obj.add(Pvec[tau] * game_def_util[tau][c][a] * x[c] * n[tau, a])
+
+	m.update()
+
+	# set objective funcion
+	m.setObjective(obj, gp.GRB.MAXIMIZE)
+
+	# solve MIQP
+	m.optimize()
+
+	# return x values
+	soln_a = []
+	for tau in range(NUMTYPES):
+		for a in range(NUMATTACKS):
+			if(n[tau, a].X > 0.9):
+				soln_a.append(a)
+	# print(soln_a, NUMTYPES)
+	return soln_a
+

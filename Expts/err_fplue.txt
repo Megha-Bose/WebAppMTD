@@ -1,0 +1,66 @@
+Traceback (most recent call last):
+  File "attacker_fplue.py", line 425, in <module>
+    BSSQ_mixed_strat_list = getBSSQStrat(game_def_util, game_att_util, sc, [1/NUMCONFIGS]*NUMCONFIGS, Pvec, NUMCONFIGS, NUMATTACKS, NUMTYPES, BSSQ_ALPHA, DISCOUNT_FACTOR, M, rng)
+  File "/home/vviswanathan/WebAppMTD_Expts/Expts/BSSQ.py", line 257, in getBSSQStrat
+    x[s], ret_q, v_def[s], ret_v_att = getSSEqMIQP(s, Qval_def, Qval_att, NUMCONFIGS, NUMATTACKS, NUMTYPES, M, P)
+  File "/home/vviswanathan/WebAppMTD_Expts/Expts/BSSQ.py", line 82, in getSSEqMIQP
+    soln_x[sdash] = x[sdash].X
+  File "src/gurobipy/var.pxi", line 125, in gurobipy.Var.__getattr__
+  File "src/gurobipy/var.pxi", line 153, in gurobipy.Var.getAttr
+  File "src/gurobipy/attrutil.pxi", line 100, in gurobipy.__getattr
+AttributeError: Unable to retrieve attribute 'X'
+Traceback (most recent call last):
+  File "attacker_fplue.py", line 425, in <module>
+    BSSQ_mixed_strat_list = getBSSQStrat(game_def_util, game_att_util, sc, [1/NUMCONFIGS]*NUMCONFIGS, Pvec, NUMCONFIGS, NUMATTACKS, NUMTYPES, BSSQ_ALPHA, DISCOUNT_FACTOR, M, rng)
+  File "/home/vviswanathan/WebAppMTD_Expts/Expts/BSSQ.py", line 257, in getBSSQStrat
+    x[s], ret_q, v_def[s], ret_v_att = getSSEqMIQP(s, Qval_def, Qval_att, NUMCONFIGS, NUMATTACKS, NUMTYPES, M, P)
+  File "/home/vviswanathan/WebAppMTD_Expts/Expts/BSSQ.py", line 82, in getSSEqMIQP
+    soln_x[sdash] = x[sdash].X
+  File "src/gurobipy/var.pxi", line 125, in gurobipy.Var.__getattr__
+  File "src/gurobipy/var.pxi", line 153, in gurobipy.Var.getAttr
+  File "src/gurobipy/attrutil.pxi", line 100, in gurobipy.__getattr
+AttributeError: Unable to retrieve attribute 'X'
+Traceback (most recent call last):
+  File "attacker_fplue.py", line 425, in <module>
+    BSSQ_mixed_strat_list = getBSSQStrat(game_def_util, game_att_util, sc, [1/NUMCONFIGS]*NUMCONFIGS, Pvec, NUMCONFIGS, NUMATTACKS, NUMTYPES, BSSQ_ALPHA, DISCOUNT_FACTOR, M, rng)
+  File "/home/vviswanathan/WebAppMTD_Expts/Expts/BSSQ.py", line 257, in getBSSQStrat
+    x[s], ret_q, v_def[s], ret_v_att = getSSEqMIQP(s, Qval_def, Qval_att, NUMCONFIGS, NUMATTACKS, NUMTYPES, M, P)
+  File "/home/vviswanathan/WebAppMTD_Expts/Expts/BSSQ.py", line 82, in getSSEqMIQP
+    soln_x[sdash] = x[sdash].X
+  File "src/gurobipy/var.pxi", line 125, in gurobipy.Var.__getattr__
+  File "src/gurobipy/var.pxi", line 153, in gurobipy.Var.getAttr
+  File "src/gurobipy/attrutil.pxi", line 100, in gurobipy.__getattr
+AttributeError: Unable to retrieve attribute 'X'
+Traceback (most recent call last):
+  File "attacker_fplue.py", line 425, in <module>
+    BSSQ_mixed_strat_list = getBSSQStrat(game_def_util, game_att_util, sc, [1/NUMCONFIGS]*NUMCONFIGS, Pvec, NUMCONFIGS, NUMATTACKS, NUMTYPES, BSSQ_ALPHA, DISCOUNT_FACTOR, M, rng)
+  File "/home/vviswanathan/WebAppMTD_Expts/Expts/BSSQ.py", line 257, in getBSSQStrat
+    x[s], ret_q, v_def[s], ret_v_att = getSSEqMIQP(s, Qval_def, Qval_att, NUMCONFIGS, NUMATTACKS, NUMTYPES, M, P)
+  File "/home/vviswanathan/WebAppMTD_Expts/Expts/BSSQ.py", line 82, in getSSEqMIQP
+    soln_x[sdash] = x[sdash].X
+  File "src/gurobipy/var.pxi", line 125, in gurobipy.Var.__getattr__
+  File "src/gurobipy/var.pxi", line 153, in gurobipy.Var.getAttr
+  File "src/gurobipy/attrutil.pxi", line 100, in gurobipy.__getattr
+AttributeError: Unable to retrieve attribute 'X'
+Traceback (most recent call last):
+  File "attacker_fplue.py", line 425, in <module>
+    BSSQ_mixed_strat_list = getBSSQStrat(game_def_util, game_att_util, sc, [1/NUMCONFIGS]*NUMCONFIGS, Pvec, NUMCONFIGS, NUMATTACKS, NUMTYPES, BSSQ_ALPHA, DISCOUNT_FACTOR, M, rng)
+  File "/home/vviswanathan/WebAppMTD_Expts/Expts/BSSQ.py", line 257, in getBSSQStrat
+    x[s], ret_q, v_def[s], ret_v_att = getSSEqMIQP(s, Qval_def, Qval_att, NUMCONFIGS, NUMATTACKS, NUMTYPES, M, P)
+  File "/home/vviswanathan/WebAppMTD_Expts/Expts/BSSQ.py", line 82, in getSSEqMIQP
+    soln_x[sdash] = x[sdash].X
+  File "src/gurobipy/var.pxi", line 125, in gurobipy.Var.__getattr__
+  File "src/gurobipy/var.pxi", line 153, in gurobipy.Var.getAttr
+  File "src/gurobipy/attrutil.pxi", line 100, in gurobipy.__getattr
+AttributeError: Unable to retrieve attribute 'X'
+Traceback (most recent call last):
+  File "attacker_fplue.py", line 425, in <module>
+    BSSQ_mixed_strat_list = getBSSQStrat(game_def_util, game_att_util, sc, [1/NUMCONFIGS]*NUMCONFIGS, Pvec, NUMCONFIGS, NUMATTACKS, NUMTYPES, BSSQ_ALPHA, DISCOUNT_FACTOR, M, rng)
+  File "/home/vviswanathan/WebAppMTD_Expts/Expts/BSSQ.py", line 257, in getBSSQStrat
+    x[s], ret_q, v_def[s], ret_v_att = getSSEqMIQP(s, Qval_def, Qval_att, NUMCONFIGS, NUMATTACKS, NUMTYPES, M, P)
+  File "/home/vviswanathan/WebAppMTD_Expts/Expts/BSSQ.py", line 82, in getSSEqMIQP
+    soln_x[sdash] = x[sdash].X
+  File "src/gurobipy/var.pxi", line 125, in gurobipy.Var.__getattr__
+  File "src/gurobipy/var.pxi", line 153, in gurobipy.Var.getAttr
+  File "src/gurobipy/attrutil.pxi", line 100, in gurobipy.__getattr
+AttributeError: Unable to retrieve attribute 'X'

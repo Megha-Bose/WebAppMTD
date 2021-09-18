@@ -19,7 +19,6 @@ virtualenv ~/mypython
 source ~/mypython/bin/activate
 
 pip install numpy
-pip install docplex
 pip install gurobipy
 
 export MKL_NUM_THREADS=1

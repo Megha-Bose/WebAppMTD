@@ -1,0 +1,10 @@
+/cm/shared/apps/python/3.7.3/bin/python
+/cm/shared/apps/python/3.7.3/bin/python
+/cm/shared/apps/python/3.7.3/bin/virtualenv
+/cm/shared/apps/python/3.7.3/bin/virtualenv
+Using base prefix '/cm/shared/apps/python/3.7.3'
+New python executable in /home/vviswanathan/mypython/bin/python3.7
+Not overwriting existing python script /home/vviswanathan/mypython/bin/python (you must use /home/vviswanathan/mypython/bin/python3.7)
+Installing setuptools, pip, wheel...
+done.
+Requirement already satisfied: numpy in /home/vviswanathan/mypython/lib/python3.7/site-packages (1.20.1)

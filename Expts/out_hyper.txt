@@ -1,0 +1,292 @@
+/cm/shared/apps/python/3.7.3/bin/python
+/cm/shared/apps/python/3.7.3/bin/python
+/cm/shared/apps/python/3.7.3/bin/virtualenv
+/cm/shared/apps/python/3.7.3/bin/virtualenv
+Using base prefix '/cm/shared/apps/python/3.7.3'
+New python executable in /home/vviswanathan/mypython/bin/python3.7
+Not overwriting existing python script /home/vviswanathan/mypython/bin/python (you must use /home/vviswanathan/mypython/bin/python3.7)
+Installing setuptools, pip, wheel...
+done.
+Requirement already satisfied: numpy in /home/vviswanathan/mypython/lib/python3.7/site-packages (1.20.1)
+Hyperparameter Combination 0
+Hyperparameter Combination 1
+Hyperparameter Combination 2
+Hyperparameter Combination 3
+Hyperparameter Combination 4
+Hyperparameter Combination 5
+Hyperparameter Combination 6
+Hyperparameter Combination 7
+Hyperparameter Combination 8
+Hyperparameter Combination 9
+Hyperparameter Combination 10
+Hyperparameter Combination 11
+Hyperparameter Combination 12
+Hyperparameter Combination 13
+Hyperparameter Combination 14
+Hyperparameter Combination 15
+Hyperparameter Combination 16
+Hyperparameter Combination 17
+Hyperparameter Combination 18
+Hyperparameter Combination 19
+Hyperparameter Combination 20
+Hyperparameter Combination 21
+Hyperparameter Combination 22
+Hyperparameter Combination 23
+Hyperparameter Combination 24
+Hyperparameter Combination 25
+Hyperparameter Combination 26
+Hyperparameter Combination 27
+Hyperparameter Combination 28
+Hyperparameter Combination 29
+Hyperparameter Combination 30
+Hyperparameter Combination 31
+Hyperparameter Combination 32
+Hyperparameter Combination 33
+Hyperparameter Combination 34
+Hyperparameter Combination 35
+Hyperparameter Combination 36
+Hyperparameter Combination 37
+Hyperparameter Combination 38
+Hyperparameter Combination 39
+Hyperparameter Combination 40
+Hyperparameter Combination 41
+Hyperparameter Combination 42
+Hyperparameter Combination 43
+Hyperparameter Combination 44
+Hyperparameter Combination 45
+Hyperparameter Combination 46
+Hyperparameter Combination 47
+Hyperparameter Combination 48
+Hyperparameter Combination 49
+Hyperparameter Combination 50
+Hyperparameter Combination 51
+Hyperparameter Combination 52
+Hyperparameter Combination 53
+Hyperparameter Combination 54
+Hyperparameter Combination 55
+Hyperparameter Combination 56
+Hyperparameter Combination 57
+Hyperparameter Combination 58
+Hyperparameter Combination 59
+Hyperparameter Combination 60
+Hyperparameter Combination 61
+Hyperparameter Combination 62
+Hyperparameter Combination 63
+Hyperparameter Combination 64
+Hyperparameter Combination 65
+Hyperparameter Combination 66
+Hyperparameter Combination 67
+Hyperparameter Combination 68
+Hyperparameter Combination 69
+Hyperparameter Combination 70
+Hyperparameter Combination 71
+Hyperparameter Combination 72
+Hyperparameter Combination 73
+Hyperparameter Combination 74
+Hyperparameter Combination 75
+Hyperparameter Combination 76
+Hyperparameter Combination 77
+Hyperparameter Combination 78
+Hyperparameter Combination 79
+Hyperparameter Combination 80
+Hyperparameter Combination 81
+Hyperparameter Combination 82
+Hyperparameter Combination 83
+Hyperparameter Combination 84
+Hyperparameter Combination 85
+Hyperparameter Combination 86
+Hyperparameter Combination 87
+Hyperparameter Combination 88
+Hyperparameter Combination 89
+Hyperparameter Combination 90
+Hyperparameter Combination 91
+Hyperparameter Combination 92
+Hyperparameter Combination 93
+Hyperparameter Combination 94
+Hyperparameter Combination 95
+Hyperparameter Combination 96
+Hyperparameter Combination 97
+Hyperparameter Combination 98
+Hyperparameter Combination 99
+Hyperparameter Combination 100
+Hyperparameter Combination 101
+Hyperparameter Combination 102
+Hyperparameter Combination 103
+Hyperparameter Combination 104
+Hyperparameter Combination 105
+Hyperparameter Combination 106
+Hyperparameter Combination 107
+Hyperparameter Combination 108
+Hyperparameter Combination 109
+Hyperparameter Combination 110
+Hyperparameter Combination 111
+Hyperparameter Combination 112
+Hyperparameter Combination 113
+Hyperparameter Combination 114
+Hyperparameter Combination 115
+Hyperparameter Combination 116
+Hyperparameter Combination 117
+Hyperparameter Combination 118
+Hyperparameter Combination 119
+Hyperparameter Combination 120
+Hyperparameter Combination 121
+Hyperparameter Combination 122
+Hyperparameter Combination 123
+Hyperparameter Combination 124
+Hyperparameter Combination 125
+Hyperparameter Combination 126
+Hyperparameter Combination 127
+Hyperparameter Combination 128
+Hyperparameter Combination 129
+Hyperparameter Combination 130
+Hyperparameter Combination 131
+Hyperparameter Combination 132
+Hyperparameter Combination 133
+Hyperparameter Combination 134
+Hyperparameter Combination 135
+Hyperparameter Combination 136
+Hyperparameter Combination 137
+Hyperparameter Combination 138
+Hyperparameter Combination 139
+Hyperparameter Combination 140
+Hyperparameter Combination 141
+Hyperparameter Combination 142
+Hyperparameter Combination 143
+Hyperparameter Combination 144
+Hyperparameter Combination 145
+Hyperparameter Combination 146
+Hyperparameter Combination 147
+Hyperparameter Combination 148
+Hyperparameter Combination 149
+Hyperparameter Combination 150
+Hyperparameter Combination 151
+Hyperparameter Combination 152
+Hyperparameter Combination 153
+Hyperparameter Combination 154
+Hyperparameter Combination 155
+Hyperparameter Combination 156
+Hyperparameter Combination 157
+Hyperparameter Combination 158
+Hyperparameter Combination 159
+Hyperparameter Combination 160
+Hyperparameter Combination 161
+Hyperparameter Combination 162
+Hyperparameter Combination 163
+Hyperparameter Combination 164
+Hyperparameter Combination 165
+Hyperparameter Combination 166
+Hyperparameter Combination 167
+Hyperparameter Combination 168
+Hyperparameter Combination 169
+Hyperparameter Combination 170
+Hyperparameter Combination 171
+Hyperparameter Combination 172
+Hyperparameter Combination 173
+Hyperparameter Combination 174
+Hyperparameter Combination 175
+Hyperparameter Combination 176
+Hyperparameter Combination 177
+Hyperparameter Combination 178
+Hyperparameter Combination 179
+Hyperparameter Combination 180
+Hyperparameter Combination 181
+Hyperparameter Combination 182
+Hyperparameter Combination 183
+Hyperparameter Combination 184
+Hyperparameter Combination 185
+Hyperparameter Combination 186
+Hyperparameter Combination 187
+Hyperparameter Combination 188
+Hyperparameter Combination 189
+Hyperparameter Combination 190
+Hyperparameter Combination 191
+Hyperparameter Combination 192
+Hyperparameter Combination 193
+Hyperparameter Combination 194
+Hyperparameter Combination 195
+Hyperparameter Combination 196
+Hyperparameter Combination 197
+Hyperparameter Combination 198
+Hyperparameter Combination 199
+Hyperparameter Selection for FPLMaxMin:
+Rank 1
+value = -100.08800000000001
+eta = 0.06
+gamma = 0.001
+Rank 2
+value = -102.04599999999999
+eta = 0.01
+gamma = 0.001
+Rank 3
+value = -102.24799999999998
+eta = 0.09
+gamma = 0.002
+Rank 4
+value = -103.76800000000001
+eta = 0.02
+gamma = 0.001
+Rank 5
+value = -104.152
+eta = 0.03
+gamma = 0.001
+Rank 6
+value = -104.212
+eta = 0.05
+gamma = 0.002
+Rank 7
+value = -104.396
+eta = 0.07
+gamma = 0.002
+Rank 8
+value = -104.69999999999999
+eta = 0.1
+gamma = 0.002
+Rank 9
+value = -104.85399999999998
+eta = 0.02
+gamma = 0.002
+Rank 10
+value = -105.07200000000002
+eta = 0.09
+gamma = 0.001
+Hyperparameter Selection for FPLMTD:
+Rank 1
+value = -101.374
+eta = 0.01
+gamma = 0.006
+Rank 2
+value = -102.95
+eta = 0.01
+gamma = 0.002
+Rank 3
+value = -102.996
+eta = 0.01
+gamma = 0.001
+Rank 4
+value = -106.938
+eta = 0.02
+gamma = 0.005
+Rank 5
+value = -111.56199999999998
+eta = 0.03
+gamma = 0.001
+Rank 6
+value = -112.41399999999999
+eta = 0.02
+gamma = 0.001
+Rank 7
+value = -116.866
+eta = 0.01
+gamma = 0.005
+Rank 8
+value = -116.906
+eta = 0.01
+gamma = 0.003
+Rank 9
+value = -118.11399999999999
+eta = 0.02
+gamma = 0.006
+Rank 10
+value = -119.094
+eta = 0.02
+gamma = 0.003

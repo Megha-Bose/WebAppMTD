@@ -48,6 +48,11 @@ def parse_util(dataset_num):
 	f = open(IN_DIR + str(dataset_num) + "utilities.txt", "r")
 	y = f.readline()
 	NUMTYPES = int(y)
+	p_type = None
+
+	p = f.readline().split()
+	p_type = [float(item) for item in p]
+
 	for t in range(NUMTYPES):
 		d = f.readline().split()
 		d = [float(item) for item in d]
@@ -58,7 +63,7 @@ def parse_util(dataset_num):
 	def_util = np.array(def_util)
 	att_util = np.array(att_util)
 	f.close()
-	return def_util, att_util
+	return def_util, att_util, p_type
 
 # get number of attacks
 def parse_attacks(dataset_num):
@@ -321,20 +326,8 @@ if __name__ == "__main__":
 		# get switching costs, utilities, and vulnerabilities
 		sc = parse_switching(dataset_num)
 		parse_attacks(dataset_num)
-		def_util, att_util = parse_util(dataset_num)
+		def_util, att_util, Pvec = parse_util(dataset_num)
 		vulset = parse_vulset(dataset_num)
-
-		# attacker type probability
-		Pvec = []
-		psum = 0.0
-		for tau in range(NUMTYPES):
-			Pvec.append(rng.random())
-			psum += Pvec[tau]
-		for tau in range(NUMTYPES):
-			Pvec[tau] = Pvec[tau] / psum
-
-		for c in range(NUMCONFIGS):
-			sc[c, c] = 0
 
 		FPL_ETA = np.sqrt(np.log(NUMCONFIGS)/(NUMCONFIGS*T)) # FPL Hyperparameter
 		EXP_ETA = np.sqrt(2*np.log(NUMCONFIGS)/(NUMCONFIGS*T)) # EXP Hyperparameter

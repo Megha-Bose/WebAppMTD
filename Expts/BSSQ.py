@@ -238,19 +238,28 @@ def getBSSQStrat(def_util, att_util, sc, p, P, NUMCONFIGS, NUMATTACKS, NUMTYPES,
 		while itr <= max_eps_len:
 			# sampling attacker type		
 			tau = getValFromDist(P, rng)
-			
-			# eps-greedy sampling of actions from x, q
-			y = rng.random()
 
 			sdash = None
 			a = None
+			
+			# eps-greedy sampling of defender action from x
+			y = rng.random()
+
 			if(y < eps_val):
 				# exploration
 				sdash = rng.integers(low=0, high=NUMCONFIGS, size=1)[0]
-				a = rng.integers(low=0, high=NUMATTACKS, size=1)[0]
 			else:
 				# greedy exploitation
 				sdash = np.argmax(x[s])
+
+			# eps-greedy sampling of attacker action from q
+			y = rng.random()
+
+			if(y < eps_val):
+				# exploration
+				a = rng.integers(low=0, high=NUMATTACKS, size=1)[0]
+			else:
+				# greedy exploitation
 				a = np.argmax(q[tau][s])
 
 			Qval_def[tau][s][sdash][a] = (1 - ALPHA) * Qval_def[tau][s][sdash][a] + ALPHA * (game_def_reward[tau][s][sdash][a] + DISCOUNT_FACTOR * v_def[sdash])

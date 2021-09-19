@@ -113,6 +113,20 @@ if __name__ == "__main__":
 
         f_util = open(DIR + str(dataset_num) + "utilities.txt", "w")
         f_util.write(str(type_num)+"\n")
+
+        P_type = []
+        psum = 0.0
+        for tau in range(type_num):
+            P_type.append(rng.random())
+            psum += P_type[tau]
+            
+        for tau in range(type_num):
+            P_type[tau] = P_type[tau] / psum
+
+        for t in range(type_num):
+            f_util.write(str(P_type[t]) + " ")
+        f_util.write("\n")
+
         # get final utilities
         for t in range(type_num):
             final_d_util = [0.0]*len(attack_set)
@@ -162,10 +176,14 @@ if __name__ == "__main__":
 
         # switching costs
         f_sc = open(DIR + str(dataset_num) + "switching.txt", "w")
+        sc = [ [0.0]*config_num for i in range(config_num)]
         for i in range(config_num):
-            for i in range(config_num):
-                sc = round(rng.random(), 1)
-                f_sc.write(str(sc) + " ")
+            for j in range(config_num):
+                if i < j:
+                    sc[i][j] = round(rng.random(), 1)
+                else:
+                    sc[i][j] = sc[j][i]
+                f_sc.write(str(sc[i][j]) + " ")
             f_sc.write("\n")  
         f_sc.close()
 

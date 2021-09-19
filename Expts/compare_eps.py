@@ -75,14 +75,14 @@ if __name__ == "__main__":
 
         for strat in range(len(strats_list)):
             switch_arr = []
-            for d in range(n_from, n_to):
+            for d in range(0, n_to - n_from):
                 switch_arr.append(switches_list[d][strat])
             x = range(n_from, n_to)
             y = switch_arr
             plt.xticks(np.arange(min(x), max(x)+1, 1.0))
             my_xticks = []
-            for d in range(n_from, n_to):
-                my_xticks.append('Configs: ' + str(config_num[d]) + '\nAttacks: ' + str(attack_num[d]) + '\nTypes: ' + str(type_num[d]))        
+            for d in range(0, n_to - n_from):
+                my_xticks.append(str(d + n_from))         
             plt.xticks(x, my_xticks)
             plt.plot(x, y, label = strats_list[strat])
             
@@ -95,14 +95,14 @@ if __name__ == "__main__":
 
         for strat in range(len(strats_list)):
             runtime_arr = []
-            for d in range(n_from, n_to):
+            for d in range(0, n_to - n_from):
                 runtime_arr.append(runtimes_list[d][strat])
             x = range(n_from, n_to)
             y = runtime_arr
             plt.xticks(np.arange(min(x), max(x)+1, 1.0))
             my_xticks = []
-            for d in range(n_from, n_to):
-                my_xticks.append('Configs: ' + str(config_num[d]) + '\nAttacks: ' + str(attack_num[d]) + '\nTypes: ' + str(type_num[d]))        
+            for d in range(0, n_to - n_from):
+                my_xticks.append(str(d + n_from))         
             plt.xticks(x, my_xticks)
             plt.plot(x, y, label = strats_list[strat])
             
@@ -115,14 +115,14 @@ if __name__ == "__main__":
 
         for strat in range(len(strats_list)):
             util_arr = []
-            for d in range(n_from, n_to):
+            for d in range(0, n_to - n_from):
                 util_arr.append(utils_list[d][strat])
             x = range(n_from, n_to)
             y = util_arr
             plt.xticks(np.arange(min(x), max(x)+1, 1.0))
             my_xticks = []
-            for d in range(n_from, n_to):
-                my_xticks.append('Configs: ' + str(config_num[d]) + '\nAttacks: ' + str(attack_num[d]) + '\nTypes: ' + str(type_num[d]))
+            for d in range(0, n_to - n_from):
+                my_xticks.append(str(d + n_from)) 
             plt.xticks(x, my_xticks)
             plt.plot(x, y, label = strats_list[strat])
             

@@ -48,10 +48,10 @@ def parse_util(dataset_num):
 	f = open(IN_DIR + str(dataset_num) + "utilities.txt", "r")
 	y = f.readline()
 	NUMTYPES = int(y)
-	p_type = None
 
-	p = f.readline().split()
-	p_type = [float(item) for item in p]
+	p_type = np.random.random(size = NUMTYPES)
+	p_type = p_type / np.sum(p_type)
+
 
 	for t in range(NUMTYPES):
 		d = f.readline().split()
@@ -62,7 +62,9 @@ def parse_util(dataset_num):
 		att_util.append(a)
 	def_util = np.array(def_util)
 	att_util = np.array(att_util)
+
 	f.close()
+	# print(NUMATTACKS)
 	return def_util, att_util, p_type
 
 # get number of attacks
@@ -117,6 +119,7 @@ def parse_game_utils(def_util, att_util, vul_set):
 		for c in range(NUMCONFIGS):
 			for a in range(NUMATTACKS):
 				if(vul_set[c,a] == 1):
+					# print(tau, a)
 					game_def_util[tau][c][a] = def_util[tau][a]
 					game_att_util[tau][c][a] = att_util[tau][a]
 	return game_def_util, game_att_util
@@ -197,7 +200,7 @@ def getFPLMTDStrat(r, s, old_strat, t, rng):
 def getFPLGRStrat(r, rng):
 	rhat = r.copy()
 	for c in range(NUMCONFIGS):
-		rhat[c] -= rng.exponential(FPL_ETA)
+		rhat[c] -= (1/FPL_ETA)*rng.exponential(1)
 	return np.argmax(rhat)
 
 # update reward estimates using GR for FPL
@@ -290,7 +293,7 @@ def getAttackStackelberg(def_util, strat, P, stack_soln, rng):
 	util_a = 0
 	util = 0
 	if(vulset[strat, v] == 1):
-		util = def_util[tau, v]
+		util = def_util[tau][v]
 
 	return util, tau, v
 
@@ -329,12 +332,16 @@ if __name__ == "__main__":
 		def_util, att_util, Pvec = parse_util(dataset_num)
 		vulset = parse_vulset(dataset_num)
 
+		for c in range(NUMCONFIGS):
+			sc[c, c] = 0
+
 		FPL_ETA = np.sqrt(np.log(NUMCONFIGS)/(NUMCONFIGS*T)) # FPL Hyperparameter
 		EXP_ETA = np.sqrt(2*np.log(NUMCONFIGS)/(NUMCONFIGS*T)) # EXP Hyperparameter
 
 		ATTACKERFPL_ETA = np.sqrt((np.log(NUMCONFIGS)+1)/T) # Attacker FPL Hyperparameter
 		ATTACKERFPL_EPS = 1/T #Attacker FPL Hyperparameter
 
+		
 		game_def_util, game_att_util = parse_game_utils(def_util, att_util, vulset)
 
 		DOBSS_mixed_strat_list = []

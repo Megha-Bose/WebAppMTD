@@ -48,8 +48,8 @@ def parse_util(dataset_num):
 	NUMTYPES = int(y)
 	p_type = None
 
-	p = f.readline().split()
-	p_type = [float(item) for item in p]
+	p_type = np.random.random(size = NUMTYPES)
+	p_type = p_type / np.sum(p_type)
 
 	for t in range(NUMTYPES):
 		d = f.readline().split()
@@ -196,7 +196,7 @@ def getFPLMTDStrat(r, s, old_strat, t, rng):
 def getFPLGRStrat(r, rng):
 	rhat = r.copy()
 	for c in range(NUMCONFIGS):
-		rhat[c] -= rng.exponential(FPL_ETA)
+		rhat[c] -= (1/FPL_ETA)*rng.exponential(1)
 	return np.argmax(rhat)
 
 # update reward estimates using GR for FPL
@@ -366,6 +366,9 @@ if __name__ == "__main__":
 		parse_attacks(dataset_num)
 		def_util, att_util, Pvec = parse_util(dataset_num)
 		vulset = parse_vulset(dataset_num)
+
+		for c in range(NUMCONFIGS):
+			sc[c, c] = 0
 
 		# Pvec = [1/NUMTYPES for i in range(NUMTYPES)]
 		FPL_ETA = np.sqrt(np.log(NUMCONFIGS)/(NUMCONFIGS*T)) # FPL Hyperparameter

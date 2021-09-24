@@ -8,7 +8,7 @@ from DOBSS import *
 IN_DIR = "../Data/input/"
 OUT_DIR = "../Data/output/"
 
-SEED = 2021
+SEED = 2022
 NUMTYPES = 1 
 NUMATTACKS = 1 
 NUMCONFIGS = 1
@@ -19,6 +19,7 @@ MaxMin_ETA = 0.06
 MTD_GAMMA = 0.006 #MTD Parameters
 MTD_ETA = 0.01
 EPSILON = 0.1
+RobustRL_EPSILON = 0.01
 BSSQ_ALPHA = 0.2
 DISCOUNT_FACTOR = 0.8
 M = 1000000
@@ -48,8 +49,8 @@ def parse_util(dataset_num):
 	NUMTYPES = int(y)
 	p_type = None
 
-	p_type = np.random.random(size = NUMTYPES)
-	p_type = p_type / np.sum(p_type)
+	p = f.readline().split()
+	p_type = [float(item) for item in p]
 
 	for t in range(NUMTYPES):
 		d = f.readline().split()
@@ -249,7 +250,7 @@ def getRobustRLStrat(RobustRL_maxvalue, rng):
 	for c in range(NUMCONFIGS):
 		if(RobustRL_maxvalue[c] != maxval):
 			notmax_array.append(c)
-	if(rng.random() < EPSILON):
+	if(rng.random() < RobustRL_EPSILON):
 		return notmax_array[int(rng.random()*len(notmax_array))]
 	return np.argmax(RobustRL_maxvalue)
 
@@ -353,7 +354,7 @@ if __name__ == "__main__":
 	OUT_DIR = OUT_DIR + case
 
 	for dataset_num in range(int(sys.argv[1]), int(sys.argv[2]) + 1):
-		# print("Dataset: " + str(dataset_num))
+		print("Dataset: " + str(dataset_num))
 
 		# seeding random number generator  for reproducability
 		rng = np.random.default_rng(SEED)
@@ -433,7 +434,7 @@ if __name__ == "__main__":
 			RobustRL_runtime += (end - start)
 
 			for t in range(T):
-				# print(str(iter)+":"+str(t) + " "*10, end = "\r")
+				print(str(iter)+":"+str(t) + " "*10, end = "\r")
 				
 				# get strategies (configs) from each method
 				start = time.time()

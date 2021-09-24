@@ -8,7 +8,7 @@ from DOBSS import *
 IN_DIR = "../Data/input/"
 OUT_DIR = "../Data/output/"
 
-SEED = 2021
+SEED = 2022
 NUMTYPES = 3 # Attacker Types
 NUMATTACKS = 292 # Max no. of attacks
 NUMCONFIGS = 4
@@ -16,6 +16,7 @@ MAX_ITER = 10
 T = 1000
 GAMMA = 0.25 # Exploration Parameter
 EPSILON = 0.1
+RobustRL_EPSILON = 0.01
 ALPHA = 0.0
 BSSQ_ALPHA = 0.4
 DISCOUNT_FACTOR = 0.8
@@ -239,7 +240,7 @@ def FPL_GR(r, strat, util, rng):
 
 # returns RobustRL strategy
 def getRobustRLStrat(movelist, utillist, rng):
-	if(rng.random()< EPSILON):
+	if(rng.random()< RobustRL_EPSILON):
 		return int(rng.random()*NUMCONFIGS)
 	l = len(movelist)
 	max_util = [-M]*NUMCONFIGS

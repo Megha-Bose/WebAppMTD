@@ -14,10 +14,10 @@ NUMATTACKS = 1
 NUMCONFIGS = 1
 MAX_ITER = 10
 T = 1000
-MaxMin_GAMMA = 0.001 #MaxMin Hyper-parameters
-MaxMin_ETA = 0.06
-MTD_GAMMA = 0.006 #MTD Parameters
-MTD_ETA = 0.01
+MaxMin_GAMMA = 0.006 #MaxMin Hyper-parameters
+MaxMin_ETA = 0.03
+MTD_GAMMA = 0.007 #MTD Parameters
+MTD_ETA = 0.1
 EPSILON = 0.1
 RobustRL_EPSILON = 0.01
 BSSQ_ALPHA = 0.2
@@ -247,12 +247,15 @@ def FPL_GR(r, strat, util, rng):
 def getRobustRLStrat(RobustRL_maxvalue, rng):
 	maxval = np.max(RobustRL_maxvalue)
 	notmax_array = []
+	max_array = []
 	for c in range(NUMCONFIGS):
 		if(RobustRL_maxvalue[c] != maxval):
 			notmax_array.append(c)
-	if(rng.random() < RobustRL_EPSILON):
+		else:
+			max_array.append(c)
+	if((rng.random() < EPSILON) & (len(notmax_array) > 0)):
 		return notmax_array[int(rng.random()*len(notmax_array))]
-	return np.argmax(RobustRL_maxvalue)
+	return max_array[int(rng.random()*len(max_array))]
 
 # samples strategy sequentially using EXP3 from p values
 def getEXP3Strat(p, rng):
@@ -434,7 +437,7 @@ if __name__ == "__main__":
 			RobustRL_runtime += (end - start)
 
 			for t in range(T):
-				print(str(iter)+":"+str(t) + " "*10, end = "\r")
+				# print(str(iter)+":"+str(t) + " "*10, end = "\r")
 				
 				# get strategies (configs) from each method
 				start = time.time()

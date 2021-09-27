@@ -1,7 +1,7 @@
 import gurobipy as gp
 import numpy as np
 
-n_episodes = 10
+n_episodes = 100
 max_eps_len = 10
 start_eps_val = 0.1
 end_eps_val = 0.05

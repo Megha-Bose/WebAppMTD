@@ -2,6 +2,7 @@ import sys
 import numpy as np
 import json
 from scipy.stats import truncnorm
+import matplotlib.pyplot as plt
 
 SEED = 2021
 DIR = "../Data/input/"
@@ -16,6 +17,8 @@ if __name__ == "__main__":
 
     dataset_from = int(sys.argv[1])
     dataset_to = int(sys.argv[2]) + 1
+    start_year = int(sys.argv[3])
+    end_year = int(sys.argv[4]) + 1
 
     n_sets = dataset_to - dataset_from
 
@@ -24,25 +27,49 @@ if __name__ == "__main__":
     attack_num_list = rng.integers(low=500, high=800, size=n_sets)
 
     # getting cvss scores from json files
-    f = open('./nvd_data/nvdcve-1.1-modified.json')
-    data = json.load(f)
+    nvd_vul_bs_score_count = {}
+    for i in range(0, 101):
+        nvd_vul_bs_score_count[str(i/10.0)] = 0
+
     nvd_vul_list = []
-    for vul in data['CVE_Items']:
-        if not 'impact' in vul or not 'baseMetricV3' in vul['impact']:
-            continue
-        if not 'cvssV3' in vul['impact']['baseMetricV3'] or not 'baseScore' in vul['impact']['baseMetricV3']['cvssV3']:
-            continue
-        if not 'exploitabilityScore' in vul['impact']['baseMetricV3'] or not 'impactScore' in vul['impact']['baseMetricV3']:
-            continue
+    bs = []
+    for year in range(start_year, end_year):
+        f = open('./nvd_data/nvdcve-1.1-' + str(year) + '.json')
+        data = json.load(f)
+        for vul in data['CVE_Items']:
+            if not 'impact' in vul or not 'baseMetricV3' in vul['impact']:
+                continue
+            if not 'cvssV3' in vul['impact']['baseMetricV3'] or not 'baseScore' in vul['impact']['baseMetricV3']['cvssV3']:
+                continue
+            if not 'exploitabilityScore' in vul['impact']['baseMetricV3'] or not 'impactScore' in vul['impact']['baseMetricV3']:
+                continue
 
-        baseScore = vul['impact']['baseMetricV3']['cvssV3']['baseScore']
-        # exploitabiliyScore = vul['impact']['baseMetricV3']['exploitabilityScore']
-        impactScore = vul['impact']['baseMetricV3']['impactScore']
+            baseScore = vul['impact']['baseMetricV3']['cvssV3']['baseScore']
+            # exploitabiliyScore = vul['impact']['baseMetricV3']['exploitabilityScore']
+            impactScore = vul['impact']['baseMetricV3']['impactScore']
 
-        nvd_vul_list.append({'id' : vul['cve']['CVE_data_meta']['ID'], 'bs': baseScore, 'is': impactScore})    
-    f.close()
+            nvd_vul_list.append({'id' : vul['cve']['CVE_data_meta']['ID'], 'bs': baseScore, 'is': impactScore}) 
+            indx = round(baseScore, 1)
+            bs.append(round(baseScore, 1))
+            nvd_vul_bs_score_count[str(indx)] += 1   
+        f.close()
+
+    # plt.hist(bs, bins=100)
+    # plt.plot()
+    # plt.show()
+
+    cnt_values = nvd_vul_bs_score_count.values()
+    total_cnt = sum(cnt_values)
+
+    nvd_vul_bs_score_prob = {}
+    for cnt_val in nvd_vul_bs_score_count:
+        nvd_vul_bs_score_prob[cnt_val] = nvd_vul_bs_score_count[cnt_val]/total_cnt
 
     max_attack_num = len(nvd_vul_list)
+
+    nvd_vul_prob = {}
+    for vul in nvd_vul_list:
+        nvd_vul_prob[vul['id']] = nvd_vul_bs_score_prob[str(round(vul['bs'], 1))]
 
     for dataset_num in range(dataset_from, dataset_to):
         indx = dataset_num - dataset_from
@@ -56,23 +83,31 @@ if __name__ == "__main__":
         defender_util = []
         skill_set = []
 
-        # list of all vulnerabilities for the dataset
-        chosen_vul = (rng.choice(nvd_vul_list, attack_num)).tolist()
+        # list of all vulnerabilities for the dataset using dist. of base scores from nvd data
+        chosen_vul = rng.choice(nvd_vul_list, attack_num, nvd_vul_prob)
+
         vul_list = []
         du = []
         au = []
 
+        nvd_chosen_vul_prob = {}
         for v in chosen_vul:
             vul_list.append(v['id'])
             du.append(-v['is'])
             au.append(v['bs'])
+            nvd_chosen_vul_prob[v['id']] = nvd_vul_prob[v['id']]
 
-        # vulnerability set for each configuration
-        vul_set = []
-        for i in range(config_num):
-            vul_set.append([])
+        # # vulnerability set for each configuration
+        # all_vul_set = []
+        # for i in range(config_num):
+        #     vc = []
+        #     for vul in nvd_vul_list:
+        #         p = rng.random()
+        #         if p < nvd_vul_bs_score_prob[str(round(vul['bs'], 1))]:
+        #             vc.append(vul['id'])
+        #     all_vul_set.append(vc)
 
-        DIR = "../Data/input/nvd_general_sum/"
+        DIR = "../Data/input/general_sum/"
 
 
         # update vulnerabilities
@@ -85,10 +120,12 @@ if __name__ == "__main__":
 
             # sampling attacks the attacker type can execute
             # normal distribution with mean being proportional to attacker type skill
-            rv = get_truncated_normal(mean=attack_num * skill, sd=50, low=240, upp=attack_num)
+            rv = get_truncated_normal(mean=attack_num * skill, sd=40, low=300, upp=attack_num)
             att_num = int(rng.choice(rv.rvs(100)))
             
-            cves = (rng.choice(vul_list, att_num)).tolist()
+            # choose vulnerabilities that can be exploited by an attacker type 
+            # using base score dist. from nvd data
+            cves = (rng.choice(vul_list, att_num, nvd_chosen_vul_prob)).tolist()
             cves.append('NO-OP\n')
 
             d_utils = [0.0]*len(cves)
@@ -97,15 +134,22 @@ if __name__ == "__main__":
             # add vulnerability if it can be exploited,
             # i.e., defender utility is non-zero
 
+            vul_set = []
             for i in range(config_num):
+                vul_set.append([])
                 for j in range(len(cves)):
+                    # effective attack or not
+                    P_eff = 0.01
+                    p = rng.random()
+                    if p < P_eff:
+                        du[j] = au[j] = 0
                     if du[j] != 0:
                         vul_set[i].append(cves[j])
                         if(cves[j] == "NO-OP\n"):
                             d_utils[j] = a_utils[j] = 0
                         else:
-                            d_utils[j] = du[j]
-                            a_utils[j] = au[j]
+                            d_utils[j] = du[vul_list.index(cves[j])]
+                            a_utils[j] = au[vul_list.index(cves[j])]
 
             # update attacks and defender, attacker utilities 
             attack_list.append(cves)

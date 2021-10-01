@@ -1,5 +1,6 @@
 import gurobipy as gp
 import numpy as np
+from docplex.mp.model import Model
 
 n_episodes = 100
 max_eps_len = 10
@@ -17,65 +18,38 @@ def getValFromDist(x, rng):
 
 # returns BSG equilibrium values
 def getSSEqMIQP(s, game_def_qval, game_att_qval, NUMCONFIGS, NUMATTACKS, NUMTYPES, M, P):
-	m = gp.Model("MIQP")
-
-	m.setParam('OutputFlag', 0)
-	m.setParam('LogFile', '')
-	m.setParam('LogToConsole', 0)
+	X = Model(name = 'BSSQ_MIQP')
 	
 	# defender mixed strategy
-	x = {i: m.addVar(lb = 0, ub = 1, vtype = gp.GRB.CONTINUOUS, name = 'x_'+str(i)) for i in range(NUMCONFIGS)}
-	m.update()
+	x = {i: X.continuous_var(name = 'x_'+str(i), lb = 0, ub = 1) for i in range(NUMCONFIGS)}
 
 	# Add defender stategy constraints: Σx = 1
-	x_sum = gp.LinExpr()
-	for i in range(NUMCONFIGS):
-		x_sum.add(x[i])
-	m.addConstr(x_sum == 1)
-
-	# declare objective function
-	obj = gp.QuadExpr()
+	X.add_constraint(X.sum(x) == 1)
 	
 	# pure strategies for (attacker type, attack)
-	q = {(i, j): m.addVar(lb = 0, ub = 1, vtype = gp.GRB.INTEGER, name = 'q_'+str(i)+str(j)) for i in range(NUMTYPES) for j in range(NUMATTACKS)}
+	q = {(i, j): X.binary_var(name = 'q_'+str(i)+'_'+str(j)) for i in range(NUMTYPES) for j in range(NUMATTACKS)}
 	
 	# value of attacker's pure strategy
-	v_a = {i: m.addVar(lb = -gp.GRB.INFINITY, ub = gp.GRB.INFINITY, vtype = gp.GRB.CONTINUOUS, name = 'v_a'+str(i)) for i in range(NUMTYPES)}
-
-	m.update()
-
-	# Update objective function
-	for tau in range(NUMTYPES):
-		for sdash in range(NUMCONFIGS):
-			for a in range(NUMATTACKS):
-				obj.add( P[tau] * game_def_qval[tau][s][sdash][a] * x[sdash] * q[tau, a] )
+	v_a = {i: X.continuous_var(name = 'v_'+str(i)) for i in range(NUMTYPES)}
 
 	# Add constraints to make attacker have a pure strategy
 	for tau in range(NUMTYPES):
-		q_sum = gp.LinExpr()
-		for a in range(NUMATTACKS):
-			q_sum.add(q[tau, a])
-		m.addConstr(q_sum==1)
-
-	m.update()
+		X.add_constraint(X.sum(q[tau, a] for a in range(NUMATTACKS)) == 1)
 
 	# Add constraints to make attacker select dominant pure strategy
 	for tau in range(NUMTYPES):
 		for a in range(NUMATTACKS):
-			val = gp.LinExpr()
-			val.add(v_a[tau])
-			for sdash in range(NUMCONFIGS):
-				val.add(float(game_att_qval[tau][s][sdash][a]) * x[sdash], -1.0)
-			m.addConstr(val >= 0)
-			m.addConstr(val <= (1 - q[tau, a]) * M)
+			X.add_constraint(v_a[tau] - X.sum(game_att_qval[tau][s][sdash][a]*x[sdash] for sdash in range(NUMCONFIGS)) >= 0)
+			X.add_constraint(v_a[tau] - X.sum(game_att_qval[tau][s][sdash][a]*x[sdash] for sdash in range(NUMCONFIGS)) <= (1 - q[tau, a]) * M)
 
-	m.update()
-
-	# set objective funcion
-	m.setObjective(obj, gp.GRB.MAXIMIZE)
+	# Maximize objective function
+	X.maximize(X.sum( P[tau] * game_def_qval[tau][s][sdash][a] * x[sdash] * q[tau, a] for tau in range(NUMTYPES) for sdash in range(NUMCONFIGS) for a in range(NUMATTACKS)))
 
 	# Solve MIQP
-	m.optimize()
+	sol = X.solve()
+	if(sol == None):
+		print("Error: No solution instance")
+		exit()
 
 	# return x, q and values
 	soln_x = [0.0 for i in range(NUMCONFIGS)]
@@ -83,106 +57,70 @@ def getSSEqMIQP(s, game_def_qval, game_att_qval, NUMCONFIGS, NUMATTACKS, NUMTYPE
 	soln_v_a = [0.0 for i in range(NUMTYPES)]
 
 	for sdash in range(NUMCONFIGS):
-		soln_x[sdash] = x[sdash].X
+		soln_x[sdash] = x[sdash].solution_value
 
 	for tau in range(NUMTYPES):
 		for a in range(NUMATTACKS):
-			soln_q[tau][a] = q[tau, a].X
+			soln_q[tau][a] = q[tau, a].solution_value
 
 	for tau in range(NUMTYPES):
-		soln_v_a[tau] = v_a[tau].X
+		soln_v_a[tau] = v_a[tau].solution_value
 
-	return soln_x, soln_q, m.objVal, soln_v_a
+	return soln_x, soln_q, X.objective_value, soln_v_a
 
 
 # returns BSG equilibrium values using decomposed MILP formulation (DOBSS)
 def getSSEqMILP(s, game_def_qval, game_att_qval, NUMCONFIGS, NUMATTACKS, NUMTYPES, M, P):
-	m = gp.Model("MILP")
-
-	m.setParam('OutputFlag', 0)
-	m.setParam('LogFile', '')
-	m.setParam('LogToConsole', 0)
-	
-	# m.update()
+	X = Model(name = 'BSSQ_MILP')
 
 	# declare objective function
-	obj = gp.QuadExpr()
 	x = []
 
 	# pure strategies for (attacker type, attack)
-	q = {(i, j): m.addVar(lb = 0, ub = 1, vtype = gp.GRB.INTEGER, name = 'q_'+str(i)+str(j)) for i in range(NUMTYPES) for j in range(NUMATTACKS)}
+	q = {(i, j): X.binary_var(name = 'q_'+str(i)+'_'+str(j)) for i in range(NUMTYPES) for j in range(NUMATTACKS)}
 	
 	# value of attacker's pure strategy
-	v_a = {i: m.addVar(lb = -gp.GRB.INFINITY, ub = gp.GRB.INFINITY, vtype = gp.GRB.CONTINUOUS, name = 'v_a'+str(i)) for i in range(NUMTYPES)}
-
-	m.update()
+	v_a = {i: X.continuous_var(name = 'v_'+str(i)) for i in range(NUMTYPES)}
 
 	# Add constraints to make attacker have the dominant pure strategy
 	for tau in range(NUMTYPES):
-		q_sum = gp.LinExpr()
-		for a in range(NUMATTACKS):
-			q_sum.add(q[tau, a])
-		m.addConstr(q_sum == 1)
+		X.add_constraint(X.sum(q[tau, a] for a in range(NUMATTACKS)) == 1)
 
-	# z[sdash][a] = x[sdash] * q[tau][a] to linearlize
+	# z[tau][sdash][a] = x[sdash] * q[tau][a] to linearlize
 	z = []
+	x = []
 	for tau in range(NUMTYPES):
+		zdash = []
 		for sdash in range(NUMCONFIGS):
-			zsdash = []
-			for a in range(NUMATTACKS):
-				zsdash.append(m.addVar(lb = 0, ub = 1, vtype = gp.GRB.CONTINUOUS, name = 'z_' + str(sdash) + str(a)))
-			z.append(zsdash)
-
-		m.update()
+			zsdash = {a: X.continuous_var(name = 'z_' + str(tau) + '_' + str(sdash) + '_' + str(a), lb = 0, ub = 1) for a in range(NUMATTACKS)}
+			zdash.append(zsdash)
+		z.append(zdash)
 
 		# z constraints
 		for a in range(NUMATTACKS):
-			zsdash_sum = gp.LinExpr()
-			for sdash in range(NUMCONFIGS):
-				zsdash_sum.add(z[sdash][a])
-			m.addConstr(zsdash_sum <= 1)
-			m.addConstr(zsdash_sum >= q[tau, a])
+			X.add_constraint(X.sum(z[tau][sdash][a] for sdash in range(NUMCONFIGS)) <= 1)
+			X.add_constraint(X.sum(z[tau][sdash][a] for sdash in range(NUMCONFIGS)) >= q[tau, a])
 
-		zsum = gp.LinExpr()
 		for sdash in range(NUMCONFIGS):
-			zq_sum = gp.LinExpr()
-			for a in range(NUMATTACKS):
-				zsum.add(z[sdash][a])
-				zq_sum.add(z[sdash][a])
+			X.add_constraint(X.sum(z[tau][sdash][a] for a in range(NUMATTACKS)) <= 1)
 			if(tau == 0):
-				x.append(zq_sum)
+				x.append(X.sum(z[tau][sdash][a] for a in range(NUMATTACKS)))
 			else:
-				m.addConstr(zq_sum == x[sdash])
-			m.addConstr(zq_sum <= 1)
-		m.addConstr(zsum == 1)
+				X.add_constraint(X.sum(z[tau][sdash][a] for a in range(NUMATTACKS)) == x[sdash])
+		X.add_constraint(X.sum(z[tau][sdash][a] for sdash in range(NUMCONFIGS) for a in range(NUMATTACKS)) == 1)
 
-		# Update objective function
-		for sdash in range(NUMCONFIGS):
-			for a in range(NUMATTACKS):
-				obj.add(P[tau] * game_def_qval[tau][s][sdash][a] * z[sdash][a])
+		# Add constraints to make attacker select dominant pure strategy
+		xsdash = X.sum(z[tau][sdash][a] for a in range(NUMATTACKS) for sdash in range(NUMCONFIGS))
+		X.add_constraint(v_a[tau] - X.sum(game_att_qval[tau][s][sdash][a]*xsdash) >= 0)
+		X.add_constraint(v_a[tau] - X.sum(game_att_qval[tau][s][sdash][a]*xsdash) <= (1 - q[tau, a]) * M)
 
-		m.update()
-
-	# Add constraints to make attacker select dominant pure strategy
-	for tau in range(NUMTYPES):
-		for a in range(NUMATTACKS):
-			val = gp.LinExpr()
-			val.add(v_a[tau])
-			for sdash in range(NUMCONFIGS):
-				xsdash = gp.LinExpr()
-				for a in range(NUMATTACKS):
-					xsdash.add(z[sdash][a])
-				val.add(float(game_att_qval[tau][s][sdash][a]) * xsdash, -1.0)
-			m.addConstr(val >= 0)
-			m.addConstr(val <= (1 - q[tau, a]) * M)
-	
-	m.update()
-
-	# set objective funcion
-	m.setObjective(obj, gp.GRB.MAXIMIZE)
+	X.maximize(X.sum(P[tau] * game_def_qval[tau][s][sdash][a] * z[tau][sdash][a] for tau in range(NUMTYPES) for sdash in range(NUMCONFIGS) for a in range(NUMATTACKS)))
 
 	# Solve MILP
-	m.optimize()
+	sol = X.solve()
+	if(sol == None):
+		print("Error: No solution instance")
+		exit()
 
 	# return x, q and values
 	soln_x = [0.0 for i in range(NUMCONFIGS)]
@@ -190,16 +128,16 @@ def getSSEqMILP(s, game_def_qval, game_att_qval, NUMCONFIGS, NUMATTACKS, NUMTYPE
 	soln_v_a = [0.0 for i in range(NUMTYPES)]
 
 	for sdash in range(NUMCONFIGS):
-		soln_x[sdash] = x[sdash].getValue()
+		soln_x[sdash] = x[sdash].solution_value
 
 	for tau in range(NUMTYPES):
 		for a in range(NUMATTACKS):
-			soln_q[tau][a] = q[tau, a].X
+			soln_q[tau][a] = q[tau, a].solution_value
 
 	for tau in range(NUMTYPES):
-		soln_v_a[tau] = v_a[tau].X
+		soln_v_a[tau] = v_a[tau].solution_value
 
-	return soln_x, soln_q, m.objVal, soln_v_a
+	return soln_x, soln_q, X.objective_value, soln_v_a
 
 
 def getBSSQStrat(def_util, att_util, sc, p, P, NUMCONFIGS, NUMATTACKS, NUMTYPES, ALPHA, DISCOUNT_FACTOR, M, rng):

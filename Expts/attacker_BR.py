@@ -395,6 +395,7 @@ if __name__ == "__main__":
 		utility = [np.array([[0.0]*T for i in range(MAX_ITER)]) for iter in range(NUMSTRATS)]
 
 		for iter in range(MAX_ITER):
+			print(str(iter), end = "\r")
 			FPLMaxMin_rhat = np.array([[0.0]*NUMATTACKS for i in range(NUMTYPES)])
 			FPLMaxMin_n = [0]*NUMATTACKS
 			FPLMaxMin_attack, FPLMaxMin_type, FPLMaxMin_util = [], [], []
@@ -437,7 +438,7 @@ if __name__ == "__main__":
 			RobustRL_runtime += (end - start)
 
 			for t in range(T):
-				# print(str(iter)+":"+str(t) + " "*10, end = "\r")
+				print(str(iter)+":"+str(t) + " "*10, end = "\r")
 				
 				# get strategies (configs) from each method
 				start = time.time()

@@ -2,7 +2,7 @@ import sys
 import numpy as np
 from scipy.stats import truncnorm
 
-SEED = 2021
+SEED = 2022
 DIR = "../Data/input/"
 
 def get_truncated_normal(mean=0, sd=1, low=0, upp=10):
@@ -75,7 +75,7 @@ if __name__ == "__main__":
             rv = get_truncated_normal(mean=attack_num * skill, sd=50, low=240, upp=attack_num)
             vul_num = int(rng.choice(rv.rvs(100)))
             
-            cves = (rng.choice(vul_list, vul_num)).tolist()
+            cves = (rng.choice(vul_list, size = vul_num, replace = False)).tolist()
             cves.append('NO-OP\n')
 
             d_utils = [0.0]*len(cves)

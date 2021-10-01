@@ -357,7 +357,7 @@ if __name__ == "__main__":
 	OUT_DIR = OUT_DIR + case
 
 	for dataset_num in range(int(sys.argv[1]), int(sys.argv[2]) + 1):
-		print("Dataset: " + str(dataset_num))
+		# print("Dataset: " + str(dataset_num))
 
 		# seeding random number generator  for reproducability
 		rng = np.random.default_rng(SEED)
@@ -395,7 +395,7 @@ if __name__ == "__main__":
 		utility = [np.array([[0.0]*T for i in range(MAX_ITER)]) for iter in range(NUMSTRATS)]
 
 		for iter in range(MAX_ITER):
-			print(str(iter), end = "\r")
+			# print(str(iter), end = "\r")
 			FPLMaxMin_rhat = np.array([[0.0]*NUMATTACKS for i in range(NUMTYPES)])
 			FPLMaxMin_n = [0]*NUMATTACKS
 			FPLMaxMin_attack, FPLMaxMin_type, FPLMaxMin_util = [], [], []

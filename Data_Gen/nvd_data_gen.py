@@ -4,7 +4,7 @@ import json
 from scipy.stats import truncnorm
 import matplotlib.pyplot as plt
 
-SEED = 2021
+SEED = 2022
 DIR = "../Data/input/"
 
 def get_truncated_normal(mean=0, sd=1, low=0, upp=10):
@@ -68,8 +68,10 @@ if __name__ == "__main__":
     max_attack_num = len(nvd_vul_list)
 
     nvd_vul_prob = {}
+    nvd_vul_prob_list = []
     for vul in nvd_vul_list:
         nvd_vul_prob[vul['id']] = nvd_vul_bs_score_prob[str(round(vul['bs'], 1))]
+        nvd_vul_prob_list.append(nvd_vul_prob[vul['id']])
 
     for dataset_num in range(dataset_from, dataset_to):
         indx = dataset_num - dataset_from
@@ -84,18 +86,18 @@ if __name__ == "__main__":
         skill_set = []
 
         # list of all vulnerabilities for the dataset using dist. of base scores from nvd data
-        chosen_vul = rng.choice(nvd_vul_list, attack_num, nvd_vul_prob)
+        chosen_vul = rng.choice(nvd_vul_list, size = attack_num, replace = False, p = [i/sum(nvd_vul_prob_list) for i in nvd_vul_prob_list])
 
         vul_list = []
         du = []
         au = []
 
-        nvd_chosen_vul_prob = {}
+        nvd_chosen_vul_prob_list = []
         for v in chosen_vul:
             vul_list.append(v['id'])
             du.append(-v['is'])
             au.append(v['bs'])
-            nvd_chosen_vul_prob[v['id']] = nvd_vul_prob[v['id']]
+            nvd_chosen_vul_prob_list.append(nvd_vul_prob[v['id']])
 
         # # vulnerability set for each configuration
         # all_vul_set = []
@@ -125,7 +127,7 @@ if __name__ == "__main__":
             
             # choose vulnerabilities that can be exploited by an attacker type 
             # using base score dist. from nvd data
-            cves = (rng.choice(vul_list, att_num, nvd_chosen_vul_prob)).tolist()
+            cves = (rng.choice(vul_list, size = att_num, replace = False, p = [i/sum(nvd_chosen_vul_prob_list) for i in nvd_chosen_vul_prob_list])).tolist()
             cves.append('NO-OP\n')
 
             d_utils = [0.0]*len(cves)

@@ -2,8 +2,8 @@ import sys
 import numpy as np
 import time
 
-from BSSQ import *
-from DOBSS import *
+from BSSQ_gurobi import *
+from DOBSS_gurobi import *
 
 IN_DIR = "../Data/input/"
 OUT_DIR = "../Data/output/"

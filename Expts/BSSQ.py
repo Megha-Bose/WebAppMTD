@@ -1,8 +1,8 @@
-import gurobipy as gp
+# import gurobipy as gp
 import numpy as np
 from docplex.mp.model import Model
 
-n_episodes = 100
+n_episodes = 10
 max_eps_len = 10
 start_eps_val = 0.1
 end_eps_val = 0.05

@@ -9,7 +9,7 @@ def getInitDOBSSStrat(game_def_util, game_att_util, sc, Pvec, NUMCONFIGS, NUMATT
 	X.P = Pvec # attacker type prob
 	X.sc = sc # switching costs
 	X.m = M # large constant
-
+	
 	# defender mixed strategy
 	x = {i: X.continuous_var(name = 'x_'+str(i), lb = 0, ub = 1) for i in range(NUMCONFIGS)}
 	# pure strategies for (attacker type, attack)

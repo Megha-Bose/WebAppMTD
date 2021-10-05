@@ -2,8 +2,8 @@ import sys
 import numpy as np
 import time
 
-from BSSQ import *
-from DOBSS import *
+from BSSQ_gurobi import *
+from DOBSS_gurobi import *
 
 IN_DIR = "../Data/input/"
 OUT_DIR = "../Data/output/"
@@ -322,7 +322,7 @@ if __name__ == "__main__":
 	OUT_DIR = OUT_DIR + case
 	
 	for dataset_num in range(int(sys.argv[1]), int(sys.argv[2]) + 1):
-		print("Dataset: " + str(dataset_num))
+		# print("Dataset: " + str(dataset_num))
 
 		# seeding random number generator  for reproducability
 		rng = np.random.default_rng(SEED)

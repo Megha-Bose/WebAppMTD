@@ -8,7 +8,7 @@
 
 #SBATCH --time=0-12:00        # Maximum runtime in D-HH:MM
 
-#SBATCH --ntasks=41			# Number of tasks
+#SBATCH --ntasks=60			# Number of tasks
 #SBATCH --cpus-per-task=1
 
 module add python/3.7.3 
@@ -19,13 +19,12 @@ virtualenv ~/mypython
 source ~/mypython/bin/activate
 
 pip install numpy
-pip install gurobipy
 
 export MKL_NUM_THREADS=1
 export OPENBLAS_NUM_THREADS=1
 export OMP_NUM_THREADS=1
 
-python attacker_fplue.py 0 0 &
+
 python attacker_fplue.py 1 1 &
 python attacker_fplue.py 2 2 &
 python attacker_fplue.py 3 3 &
@@ -46,6 +45,26 @@ python attacker_fplue.py 17 17 &
 python attacker_fplue.py 18 18 &
 python attacker_fplue.py 19 19 &
 python attacker_fplue.py 20 20 &
+python attacker_fplue.py 101 101 &
+python attacker_fplue.py 102 102 &
+python attacker_fplue.py 103 103 &
+python attacker_fplue.py 104 104 &
+python attacker_fplue.py 105 105 &
+python attacker_fplue.py 106 106 &
+python attacker_fplue.py 107 107 &
+python attacker_fplue.py 108 108 &
+python attacker_fplue.py 109 109 &
+python attacker_fplue.py 110 110 &
+python attacker_fplue.py 111 111 &
+python attacker_fplue.py 112 112 &
+python attacker_fplue.py 113 113 &
+python attacker_fplue.py 114 114 &
+python attacker_fplue.py 115 115 &
+python attacker_fplue.py 116 116 &
+python attacker_fplue.py 117 117 &
+python attacker_fplue.py 118 118 &
+python attacker_fplue.py 119 119 &
+python attacker_fplue.py 120 120 &
 python attacker_fplue.py 1 1 0 &
 python attacker_fplue.py 2 2 0 &
 python attacker_fplue.py 3 3 0 &

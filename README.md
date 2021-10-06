@@ -1,8 +1,8 @@
 # Moving Target Defense under Uncertainty
 
-There are three folders: 
+The data and code are present in five main directories: 
 
-1. The `Data` folder contains the given and generated datasets. The files in the input subfolder are sent as input to the algorithms in Expts folder and their  output is sent to the output subfolder. 
+1. The `Data` directory contains the given and generated datasets. The files in the input subdirectory are sent as input to the algorithms in Expts directory and their output is sent to the output subdirectory. 
 
     - The input files go as `[dataset number](attacks.txt, switching.txt, utilities.txt, vulnerabilities.txt)`. 
 
@@ -16,15 +16,17 @@ There are three folders:
     - data_generator.py: Generates random datasets. To run,
         `python3 data_generator.py n1 n2` generates input files  in `Data/input/` for datasets `n1` to `n2`  
         `0` should be added as third argument if the command is run for zero sum game datasets
-    - parser.py: Parses data from Sengupta's library and makes it dataset `0` inside `Data/input/general_sum/` folder
+    - nvd_data_gen.py: Generates NVD-based datasets. To run,
+        `python3 nvd_data_gen.py n1 n2 y1 y2` generates input files  in `Data/input/` for datasets `n1` to `n2` using vulnerabilities from NVD database from year `y1` to year `y2`
+    - parser.py: Parses data from Sengupta's library and makes it dataset `0` inside `Data/input/general_sum/` directory
 
 
-3. The third folder is `Expts` and there are three important files here; the rest of them are just old files.
+3. The directory `Expts` contains main code that uses different attacker strategies to generate output; the rest of them are just old files.
 
-    - The three files are attacker_eps.py, attacker_BR.py and attacker_fplue.py
-    - Run them like `python3 attacker_BR.py n1 n2` to generate output files for datasets `n1` to `n2`. `0` should be added as third argument if the command is run for zero sum game datasets
-    - These three files correspond to three different attacker strategies: eps corresponds to epsilon optimal -- given some epsilon, the attacker randomly chooses between all the strategies that achieve a (1-epsilon) \times optimal utility for that round. This type assumes knowledge about what move the defender makes. 
+    - Run them like `python3 attacker_[attacker_strategy].py n1 n2` to generate output files for datasets `n1` to `n2` using corresponding attacker strategy. `0` should be added as third argument if the command is run for zero sum game datasets 
 
-    - BR corresponds to Best Response (exactly the same as that of the FPL-UE paper) and fplue corresponds to an attacker whose strategy is decided by the FPL-UE algorithm. The rest of the code in these three files is the same: they correspond to ten defender strategies.
+    - Run `compare_[attacker strategy].py n1 n2` to generate switches, runtime and utility graphs inside `graphs` directory in the corresponding output directory for datasets `n1` to `n2` for an attacker strategy. `0` should be added as third argument if the command is run for zero sum game datasets
 
-    - Run `compare_[attacker strategy].py n1 n2` to generate switches, runtime and utility graphs inside `graphs` folder in the corresponding output folder for datasets `n1` to `n2` for an attacker strategy. `0` should be added as third argument if the command is run for zero sum game datasets
+4. The directory `Analysis` contains python notebooks to generate the graphs.
+
+5. The directory `Graphs` contains all the graphs generated.

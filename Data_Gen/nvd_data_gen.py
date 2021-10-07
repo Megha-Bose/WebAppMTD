@@ -54,9 +54,15 @@ if __name__ == "__main__":
             nvd_vul_bs_score_count[str(indx)] += 1   
         f.close()
 
-    # plt.hist(bs, bins=100)
-    # plt.plot()
-    # plt.show()
+    # plotting base score distribution
+    plt.rcParams['pdf.fonttype'] = 42
+    plt.rcParams['ps.fonttype'] = 42
+    plt.xlabel('Base Score', fontweight='bold')
+    plt.ylabel('Number of Vulnerabilities', fontweight='bold')
+    plt.hist(bs, bins=100)
+    plt.plot()
+    plt.savefig('nvd_BS.png')
+    plt.show()
 
     cnt_values = nvd_vul_bs_score_count.values()
     total_cnt = sum(cnt_values)

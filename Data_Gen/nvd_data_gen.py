@@ -76,7 +76,7 @@ if __name__ == "__main__":
     nvd_vul_prob = {}
     nvd_vul_prob_list = []
     for vul in nvd_vul_list:
-        nvd_vul_prob[vul['id']] = nvd_vul_bs_score_prob[str(round(vul['bs'], 1))]
+        nvd_vul_prob[vul['id']] = 1
         nvd_vul_prob_list.append(nvd_vul_prob[vul['id']])
 
     for dataset_num in range(dataset_from, dataset_to):

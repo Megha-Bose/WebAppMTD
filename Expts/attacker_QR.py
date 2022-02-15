@@ -12,7 +12,7 @@ SEED = 2022
 NUMTYPES = 1 
 NUMATTACKS = 1 
 NUMCONFIGS = 1
-MAX_ITER = 10
+MAX_ITER = 2
 T = 1000
 MaxMin_GAMMA = 0.006 #MaxMin Hyper-parameters
 MaxMin_ETA = 0.03
@@ -25,6 +25,7 @@ DISCOUNT_FACTOR = 0.8
 M = 1000000
 Lmax = 1000
 PADDING = 1/(T**(1/3))
+lambda_QR = 0.75
 
 
 NUMSTRATS = 11
@@ -301,8 +302,8 @@ def Attacker_GR(rhat, vdash, util, rng):
 	return r
 
 
-# getting attack that gives best attack utility
-def getAttackBestResponse(def_util, att_util, strat, P, vulset, Mixed_Strat, t, rng):
+# getting attack that according to QR
+def getAttackQuantalResponse(def_util, att_util, strat, P, vulset, Mixed_Strat, t, rng):
 	y = rng.random()
 	tau = NUMTYPES - 1
 	for i in range(NUMTYPES):
@@ -312,17 +313,31 @@ def getAttackBestResponse(def_util, att_util, strat, P, vulset, Mixed_Strat, t, 
 		else:
 			y -= P[i]
 
-	# get utilities for attacks
-	util_vec = [0.0]*NUMATTACKS
+	# get probabilities for attacks according to quantal response
+	att_prob = [1/NUMATTACKS]*NUMATTACKS
+	tot = 0
 	for a in range(NUMATTACKS):
-		u = 0
+		att_prob[a] = 1
 		for c in range(NUMCONFIGS):
 			if(vulset[c, a] == 1):
-				u += att_util[tau, a]*Mixed_Strat[c]
-		util_vec[a] = u 
+				att_prob[a] = att_prob[a] * np.exp(lambda_QR * Mixed_Strat[c] * att_util[tau, c])
+		if att_prob[a] == 1:
+			att_prob[a] = 0
+		tot += att_prob[a]
+		
+	if tot != 0:
+		for a in range(NUMATTACKS):
+			att_prob[a] = att_prob[a] / tot
 
-	# max attack utility
-	attack = np.argmax(util_vec)
+	y = rng.random()
+	attack = NUMATTACKS - 1
+	for i in range(NUMATTACKS):
+		if(y < att_prob[i]):
+			attack = i
+			break
+		else:
+			y -= att_prob[i]
+
 	# get corresponding defender utility
 	util = 0
 	if(vulset[strat, attack] == 1):
@@ -408,8 +423,6 @@ if __name__ == "__main__":
 
 			Mixed_Strat = [[0.0]*NUMCONFIGS for i in range(NUMSTRATS)]
 
-			config_hit_count = [1]*NUMCONFIGS
-
 			EXP3_p = [1/NUMCONFIGS]*NUMCONFIGS
 			EXP3_L = [0.0]*NUMCONFIGS
 
@@ -421,6 +434,8 @@ if __name__ == "__main__":
 			SwitchingExp3_util = 0.0
 
 			RobustRL_maxvalue = [T]*NUMCONFIGS
+
+			config_hit_count = [1]*NUMCONFIGS
 
 			strat_old = [-1]*NUMSTRATS
 			# DOBSS_mixed_strat = getInitDOBSSStrat(game_def_util, game_att_util, sc, Pvec, NUMCONFIGS, NUMATTACKS, NUMTYPES, M)
@@ -511,7 +526,7 @@ if __name__ == "__main__":
 				# calculate ultilities using strategy from each method by simulating attack
 				util, typ, attack, scosts = [0.0]*NUMSTRATS, [0]*NUMSTRATS, [0]*NUMSTRATS, [0.0]*NUMSTRATS
 				for i in range(NUMSTRATS):
-					util[i], typ[i], attack[i], Mixed_Strat[i] = getAttackBestResponse(def_util, att_util, strat[i], Pvec, vulset, Mixed_Strat[i], t, rng)
+					util[i], typ[i], attack[i], Mixed_Strat[i] = getAttackQuantalResponse(def_util, att_util, strat[i], Pvec, vulset, Mixed_Strat[i], t, rng)
 					
 					if(strat_old[i]!=-1):
 						scosts[i] = sc[strat_old[i], strat[i]]
@@ -603,7 +618,7 @@ if __name__ == "__main__":
 
 		print("\n")
 		stdout = sys.stdout
-		f_ov_out = open(OUT_DIR + str(dataset_num) + "overall_out_BestResponse.txt", 'w')
+		f_ov_out = open(OUT_DIR + str(dataset_num) + "overall_out_QuantalResponse.txt", 'w')
 		sys.stdout = f_ov_out
 
 		print(NUMCONFIGS)
@@ -632,7 +647,7 @@ if __name__ == "__main__":
 
 		print("Average utilities per iteration:")
 		# FPLMTD, FPLMTDLite, DOBSS, RANDOM, RobustRL, EXP3, BSSQ sum of utilities
-		f_out = open(OUT_DIR + str(dataset_num) + "output_BestResponse.txt", "w")
+		f_out = open(OUT_DIR + str(dataset_num) + "output_QuantalResponse.txt", "w")
 		for i in range(NUMSTRATS):
 			# print(np.sum(utility[i, :])/MAX_ITER)
 			print(str(np.sum(utility[i])/MAX_ITER))

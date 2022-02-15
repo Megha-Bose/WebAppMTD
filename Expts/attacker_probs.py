@@ -1,3 +1,4 @@
+from ast import Num
 import sys
 import numpy as np
 import time
@@ -301,8 +302,8 @@ def Attacker_GR(rhat, vdash, util, rng):
 	return r
 
 
-# getting attack that gives best attack utility
-def getAttackBestResponse(def_util, att_util, strat, P, vulset, Mixed_Strat, t, rng):
+# getting attack that gives attack with probability based on utility collected from each attack
+def getAttackProbsResponse(def_util, att_util, strat, P, vulset, att_hit_count, t, rng):
 	y = rng.random()
 	tau = NUMTYPES - 1
 	for i in range(NUMTYPES):
@@ -312,30 +313,31 @@ def getAttackBestResponse(def_util, att_util, strat, P, vulset, Mixed_Strat, t, 
 		else:
 			y -= P[i]
 
-	# get utilities for attacks
-	util_vec = [0.0]*NUMATTACKS
-	for a in range(NUMATTACKS):
-		u = 0
-		for c in range(NUMCONFIGS):
-			if(vulset[c, a] == 1):
-				u += att_util[tau, a]*Mixed_Strat[c]
-		util_vec[a] = u 
+	att_probs = [1/NUMATTACKS] * NUMATTACKS
+	if np.sum(att_hit_count[tau]) != 0:
+		for a in range(NUMATTACKS):
+			att_probs[a] = att_hit_count[a] / np.sum(att_hit_count)
 
-	# max attack utility
-	attack = np.argmax(util_vec)
+	y = rng.random()
+	attack = NUMATTACKS - 1
+	for i in range(NUMATTACKS):
+		if(y < att_probs[i]):
+			attack = i
+			break
+		else:
+			y -= att_probs[i]
+
 	# get corresponding defender utility
 	util = 0
 	if(vulset[strat, attack] == 1):
 		util = def_util[tau, attack]
+	
+	# update hit count for each attack on the basis of vulnerabilities exploitable in current configuration
+	for a in range(NUMATTACKS):
+		if(vulset[strat, a] == 1):
+			att_hit_count[a]+=1
 
-	# assigning weights according to outcome
-	MS = Mixed_Strat.copy()
-	for c in range(NUMCONFIGS):
-		MS[c] = MS[c]*(t)/(t+1)
-		if(c == strat):
-			MS[c] += 1/(t+1)
-
-	return util, tau, attack, MS
+	return util, tau, attack, att_hit_count
 
 
 epsvec = [0.5, 0.6, 0.7, 0.8, 0.9]
@@ -408,6 +410,8 @@ if __name__ == "__main__":
 
 			Mixed_Strat = [[0.0]*NUMCONFIGS for i in range(NUMSTRATS)]
 
+			# for probabilistic methods
+			att_hit_count = [[0]*NUMATTACKS for i in range(NUMTYPES)]
 			config_hit_count = [1]*NUMCONFIGS
 
 			EXP3_p = [1/NUMCONFIGS]*NUMCONFIGS
@@ -486,7 +490,7 @@ if __name__ == "__main__":
 				end = time.time()
 				FPLMTD_runtime += (end - start)
 
-				# get mixed strategy for BSSQ
+				# get strategy for BSSQ
 				start = time.time()
 				strat[BSSQ] = getStratFromDist(BSSQ_mixed_strat, rng)			
 				end = time.time()
@@ -511,7 +515,7 @@ if __name__ == "__main__":
 				# calculate ultilities using strategy from each method by simulating attack
 				util, typ, attack, scosts = [0.0]*NUMSTRATS, [0]*NUMSTRATS, [0]*NUMSTRATS, [0.0]*NUMSTRATS
 				for i in range(NUMSTRATS):
-					util[i], typ[i], attack[i], Mixed_Strat[i] = getAttackBestResponse(def_util, att_util, strat[i], Pvec, vulset, Mixed_Strat[i], t, rng)
+					util[i], typ[i], attack[i], att_hit_count = getAttackProbsResponse(def_util, att_util, strat[i], Pvec, vulset, att_hit_count, t, rng)
 					
 					if(strat_old[i]!=-1):
 						scosts[i] = sc[strat_old[i], strat[i]]
@@ -523,7 +527,7 @@ if __name__ == "__main__":
 							config_hit_count[strat[i]] += 1
 						end = time.time()
 						BiasedASLR_runtime += (end - start)
-
+					
 
 				#print(util[0])
 				#DOBSS_mixed_strat = getDOBSSStrat(game_def_util, game_att_util, sc, Pvec, strat[DOBSS], NUMCONFIGS, NUMATTACKS, NUMTYPES, M)
@@ -601,9 +605,9 @@ if __name__ == "__main__":
 
 			# print("Iteration " + str(iter+1) + " over.")
 
-		print("\n")
+		# print("\n")
 		stdout = sys.stdout
-		f_ov_out = open(OUT_DIR + str(dataset_num) + "overall_out_BestResponse.txt", 'w')
+		f_ov_out = open(OUT_DIR + str(dataset_num) + "overall_out_ProbsResponse.txt", 'w')
 		sys.stdout = f_ov_out
 
 		print(NUMCONFIGS)
@@ -632,7 +636,7 @@ if __name__ == "__main__":
 
 		print("Average utilities per iteration:")
 		# FPLMTD, FPLMTDLite, DOBSS, RANDOM, RobustRL, EXP3, BSSQ sum of utilities
-		f_out = open(OUT_DIR + str(dataset_num) + "output_BestResponse.txt", "w")
+		f_out = open(OUT_DIR + str(dataset_num) + "output_ProbsResponse.txt", "w")
 		for i in range(NUMSTRATS):
 			# print(np.sum(utility[i, :])/MAX_ITER)
 			print(str(np.sum(utility[i])/MAX_ITER))

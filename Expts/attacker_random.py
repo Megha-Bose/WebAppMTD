@@ -29,7 +29,7 @@ PADDING = 1/(T**(1/3))
 
 
 
-NUMSTRATS = 10
+NUMSTRATS = 11
 FPLMaxMin = 0
 FPLMTD = 1
 DOBSS = 2
@@ -40,6 +40,7 @@ BSSQ = 6
 PaddedExp3 = 7
 SwitchingExp3 = 8
 FPLGR = 9
+BiasedASLR = 10
 
 # returns defender and attacker utilities
 def parse_util(dataset_num):
@@ -332,6 +333,7 @@ if __name__ == "__main__":
 
 		FPLMaxMin_runtime = FPLMTD_runtime = DOBSS_runtime = RANDOM_runtime = RobustRL_runtime = 0
 		EXP3_runtime = BSSQ_runtime = PaddedExp3_runtime = SwitchingExp3_runtime = FPLGR_runtime = 0
+		BiasedASLR_runtime = 0
 
 		# get switching costs, utilities, and vulnerabilities
 		sc = parse_switching(dataset_num)
@@ -377,6 +379,8 @@ if __name__ == "__main__":
 			# stack_soln = getStackelbergSolution(game_def_util, game_att_util, Pvec, NUMCONFIGS, NUMATTACKS, NUMTYPES, M)
 
 			Mixed_Strat = [[0.0]*NUMATTACKS for i in range(NUMSTRATS)]
+
+			config_hit_count = [1]*NUMCONFIGS
 
 			EXP3_p = [1/NUMCONFIGS]*NUMCONFIGS
 			EXP3_L = [0.0]*NUMCONFIGS
@@ -460,6 +464,18 @@ if __name__ == "__main__":
 				end = time.time()
 				BSSQ_runtime += (end - start)
 
+				# get strategy for BiasedASLR
+				start = time.time()
+				probs_config = [1/NUMCONFIGS]*NUMCONFIGS
+				total_probs_config = 0
+				for config in range(NUMCONFIGS):
+					total_probs_config += (1.0/config_hit_count[config])
+				for config in range(NUMCONFIGS):
+					probs_config[config] = (1.0/config_hit_count[config])/total_probs_config
+				strat[BiasedASLR] = getStratFromDist(probs_config, rng)
+				end = time.time()
+				BiasedASLR_runtime += (end - start)
+
 				for i in range(NUMSTRATS):
 					if(strat[i] != strat_old[i]):
 						switch[i]+=1
@@ -472,6 +488,13 @@ if __name__ == "__main__":
 					if(strat_old[i]!=-1):
 						scosts[i] = sc[strat_old[i], strat[i]]
 					utility[i][iter, t] += (util[i] - scosts[i])
+
+					if i == BiasedASLR:
+						start = time.time()
+						if util[i] < 0:
+							config_hit_count[strat[i]] += 1
+						end = time.time()
+						BiasedASLR_runtime += (end - start)
 
 
 				#print(util[0])
@@ -576,6 +599,7 @@ if __name__ == "__main__":
 		print(PaddedExp3_runtime/MAX_ITER)
 		print(SwitchingExp3_runtime/MAX_ITER)
 		print(FPLGR_runtime/MAX_ITER)
+		print(BiasedASLR_runtime/MAX_ITER)
 		print("\n")
 
 		print("Average utilities per iteration:")

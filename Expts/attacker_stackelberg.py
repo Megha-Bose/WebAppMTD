@@ -486,12 +486,6 @@ if __name__ == "__main__":
 						scosts[i] = sc[strat_old[i], strat[i]]
 					utility[i][iter, t] += (util[i] - scosts[i])
 
-					if i == BiasedASLR:
-						start = time.time()
-						if util[i] < 0:
-							config_hit_count[strat[i]] += 1
-						end = time.time()
-						BiasedASLR_runtime += (end - start)
 
 
 				#print(util[0])
@@ -501,6 +495,14 @@ if __name__ == "__main__":
 				BSSQ_mixed_strat = BSSQ_mixed_strat_list[strat[BSSQ]]
 
 
+				#Updating Biased ASLR
+				start = time.time()
+				for cprime in range(NUMCONFIGS):
+					if((vulset[cprime, attack[BiasedASLR]] == 1) & (def_util[typ[BiasedASLR], attack[BiasedASLR]] < 0)):
+						config_hit_count[cprime] += 1
+				end = time.time()
+				BiasedASLR_runtime += (end - start)
+				
 				# Reward estimates using Geometric Resampling
 				start = time.time()
 				FPLMaxMin_attack.append(attack[FPLMaxMin])

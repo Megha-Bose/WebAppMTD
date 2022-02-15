@@ -8,7 +8,7 @@
 
 #SBATCH --time=0-12:00        # Maximum runtime in D-HH:MM
 
-#SBATCH --ntasks=60			# Number of tasks
+#SBATCH --ntasks=61			# Number of tasks
 #SBATCH --cpus-per-task=1
 
 module add python/3.7.3 
@@ -24,7 +24,7 @@ export MKL_NUM_THREADS=1
 export OPENBLAS_NUM_THREADS=1
 export OMP_NUM_THREADS=1
 
-
+python attacker_fplue.py 0 0 &
 python attacker_fplue.py 1 1 &
 python attacker_fplue.py 2 2 &
 python attacker_fplue.py 3 3 &

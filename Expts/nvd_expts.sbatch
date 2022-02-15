@@ -29,5 +29,7 @@ python attacker_BR.py 0 0 &
 python attacker_fplue.py 0 0 &
 python attacker_stackelberg.py 0 0 &
 python attacker_random.py 0 0 &
+python attacker_QR.py 0 0 &
+python attacker_probs.py 0 0 &
 
 wait

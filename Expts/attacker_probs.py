@@ -312,8 +312,14 @@ def getAttackProbsResponse(def_util, att_util, strat, P, vulset, att_hit_count, 
 			break
 		else:
 			y -= P[i]
+	count = 0
+	att_probs = [0]*NUMATTACKS
+	for a in range(NUMATTACKS):
+		if(att_util[tau, a] > 0):
+			att_probs[a] = 1
+			count += 1
+	att_probs = att_probs/count
 
-	att_probs = [1/NUMATTACKS] * NUMATTACKS
 	if np.sum(att_hit_count[tau]) != 0:
 		for a in range(NUMATTACKS):
 			att_probs[a] = att_hit_count[a] / np.sum(att_hit_count)
@@ -334,8 +340,9 @@ def getAttackProbsResponse(def_util, att_util, strat, P, vulset, att_hit_count, 
 	
 	# update hit count for each attack on the basis of vulnerabilities exploitable in current configuration
 	for a in range(NUMATTACKS):
-		if(vulset[strat, a] == 1):
-			att_hit_count[a]+=1
+		for tauprime in range(NUMTYPES):
+			if((vulset[strat, a] == 1) & (att_util[tau, a] > 0)):
+				att_hit_count[tauprime, a]+=1
 
 	return util, tau, attack, att_hit_count
 
@@ -520,13 +527,6 @@ if __name__ == "__main__":
 					if(strat_old[i]!=-1):
 						scosts[i] = sc[strat_old[i], strat[i]]
 					utility[i][iter, t] = (util[i] - scosts[i])
-
-					if i == BiasedASLR:
-						start = time.time()
-						if util[i] < 0:
-							config_hit_count[strat[i]] += 1
-						end = time.time()
-						BiasedASLR_runtime += (end - start)
 					
 
 				#print(util[0])
@@ -534,6 +534,15 @@ if __name__ == "__main__":
 				DOBSS_mixed_strat = DOBSS_mixed_strat_list[strat[DOBSS]]
 
 				BSSQ_mixed_strat = BSSQ_mixed_strat_list[strat[BSSQ]]
+
+				#Updating Biased ASLR
+				start = time.time()
+				for cprime in range(NUMCONFIGS):
+					if((vulset[cprime, attack[BiasedASLR]] == 1) & (def_util[typ[BiasedASLR], attack[BiasedASLR]] < 0)):
+						config_hit_count[cprime] += 1
+				end = time.time()
+				BiasedASLR_runtime += (end - start)
+
 
 
 				# Reward estimates using Geometric Resampling

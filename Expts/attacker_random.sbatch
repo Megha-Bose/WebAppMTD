@@ -9,7 +9,6 @@
 #SBATCH --time=0-12:00        # Maximum runtime in D-HH:MM
 
 #SBATCH --ntasks=61			# Number of tasks
-#SBATCH --cpus-per-task=1
 
 module add python/3.7.3 
 which python /cm/shared/apps/python/3.7.3/bin/python

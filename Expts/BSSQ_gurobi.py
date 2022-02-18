@@ -2,7 +2,7 @@ import gurobipy as gp
 import numpy as np
 from docplex.mp.model import Model
 
-n_episodes = 25
+n_episodes = 50
 max_eps_len = 10
 start_eps_val = 0.1
 end_eps_val = 0.05
@@ -18,80 +18,91 @@ def getValFromDist(x, rng):
 
 # returns BSG equilibrium values
 def getSSEqMIQP(s, game_def_qval, game_att_qval, NUMCONFIGS, NUMATTACKS, NUMTYPES, M, P):
-	m = gp.Model("MIQP")
+	try:
+		m = gp.Model("MIQP")
 
-	m.setParam('OutputFlag', 0)
-	m.setParam('LogFile', '')
-	m.setParam('LogToConsole', 0)
-	
-	# defender mixed strategy
-	x = {i: m.addVar(lb = 0, ub = 1, vtype = gp.GRB.CONTINUOUS, name = 'x_'+str(i)) for i in range(NUMCONFIGS)}
-	m.update()
+		m.setParam('OutputFlag', 0)
+		m.setParam('LogFile', '')
+		m.setParam('LogToConsole', 0)
 
-	# Add defender stategy constraints: Σx = 1
-	x_sum = gp.LinExpr()
-	for i in range(NUMCONFIGS):
-		x_sum.add(x[i])
-	m.addConstr(x_sum == 1)
+		game_def_qval_copy = game_def_qval.copy()
+		game_att_qval_copy = game_att_qval.copy()
+		
+		# defender mixed strategy
+		x = {i: m.addVar(lb = 0, ub = 1, vtype = gp.GRB.CONTINUOUS, name = 'x_'+str(i)) for i in range(NUMCONFIGS)}
+		m.update()
 
-	# declare objective function
-	obj = gp.QuadExpr()
-	
-	# pure strategies for (attacker type, attack)
-	q = {(i, j): m.addVar(lb = 0, ub = 1, vtype = gp.GRB.INTEGER, name = 'q_'+str(i)+str(j)) for i in range(NUMTYPES) for j in range(NUMATTACKS)}
-	
-	# value of attacker's pure strategy
-	v_a = {i: m.addVar(lb = -gp.GRB.INFINITY, ub = gp.GRB.INFINITY, vtype = gp.GRB.CONTINUOUS, name = 'v_a'+str(i)) for i in range(NUMTYPES)}
+		# Add defender stategy constraints: Σx = 1
+		x_sum = gp.LinExpr()
+		for i in range(NUMCONFIGS):
+			x_sum.add(x[i])
+		m.addConstr(x_sum == 1)
 
-	m.update()
+		# declare objective function
+		obj = gp.QuadExpr()
+		
+		# pure strategies for (attacker type, attack)
+		q = {(i, j): m.addVar(lb = 0, ub = 1, vtype = gp.GRB.INTEGER, name = 'q_'+str(i)+str(j)) for i in range(NUMTYPES) for j in range(NUMATTACKS)}
+		
+		# value of attacker's pure strategy
+		v_a = {i: m.addVar(lb = -gp.GRB.INFINITY, ub = gp.GRB.INFINITY, vtype = gp.GRB.CONTINUOUS, name = 'v_a'+str(i)) for i in range(NUMTYPES)}
 
-	# Update objective function
-	for tau in range(NUMTYPES):
-		for sdash in range(NUMCONFIGS):
-			for a in range(NUMATTACKS):
-				obj.add( P[tau] * game_def_qval[tau][s][sdash][a] * x[sdash] * q[tau, a] )
+		m.update()
 
-	# Add constraints to make attacker have a pure strategy
-	for tau in range(NUMTYPES):
-		q_sum = gp.LinExpr()
-		for a in range(NUMATTACKS):
-			q_sum.add(q[tau, a])
-		m.addConstr(q_sum==1)
-
-	m.update()
-
-	# Add constraints to make attacker select dominant pure strategy
-	for tau in range(NUMTYPES):
-		for a in range(NUMATTACKS):
-			val = gp.LinExpr()
-			val.add(v_a[tau])
+		# Update objective function
+		for tau in range(NUMTYPES):
 			for sdash in range(NUMCONFIGS):
-				val.add(float(game_att_qval[tau][s][sdash][a]) * x[sdash], -1.0)
-			m.addConstr(val >= 0)
-			m.addConstr(val <= (1 - q[tau, a]) * M)
+				for a in range(NUMATTACKS):
+					obj.add( P[tau] * game_def_qval_copy[tau][s][sdash][a] * x[sdash] * q[tau, a] )
 
-	m.update()
+		# Add constraints to make attacker have a pure strategy
+		for tau in range(NUMTYPES):
+			q_sum = gp.LinExpr()
+			for a in range(NUMATTACKS):
+				q_sum.add(q[tau, a])
+			m.addConstr(q_sum==1)
 
-	# set objective funcion
-	m.setObjective(obj, gp.GRB.MAXIMIZE)
+		m.update()
 
-	# Solve MIQP
-	m.optimize()
+		# Add constraints to make attacker select dominant pure strategy
+		for tau in range(NUMTYPES):
+			for a in range(NUMATTACKS):
+				val = gp.LinExpr()
+				val.add(v_a[tau])
+				for sdash in range(NUMCONFIGS):
+					val.add(float(game_att_qval_copy[tau][s][sdash][a]) * x[sdash], -1.0)
+				m.addConstr(val >= 0)
+				m.addConstr(val <= (1.001 - q[tau, a]) * 100)
 
-	# return x, q and values
-	soln_x = [0.0 for i in range(NUMCONFIGS)]
-	soln_q = [[0.0 for i in range(NUMATTACKS)] for j in range(NUMTYPES)]
-	soln_v_a = [0.0 for i in range(NUMTYPES)]
+		m.update()
 
-	for sdash in range(NUMCONFIGS):
-		soln_x[sdash] = x[sdash].X
+		# set objective funcion
+		m.setObjective(obj, gp.GRB.MAXIMIZE)
 
-	for tau in range(NUMTYPES):
-		for a in range(NUMATTACKS):
-			soln_q[tau][a] = q[tau, a].X
+		# Solve MIQP
+		m.optimize()
 
-	for tau in range(NUMTYPES):
-		soln_v_a[tau] = v_a[tau].X
+		# return x, q and values
+		soln_x = [0.0 for i in range(NUMCONFIGS)]
+		soln_q = [[0.0 for i in range(NUMATTACKS)] for j in range(NUMTYPES)]
+		soln_v_a = [0.0 for i in range(NUMTYPES)]
+
+		for sdash in range(NUMCONFIGS):
+			soln_x[sdash] = x[sdash].X
+
+		for tau in range(NUMTYPES):
+			for a in range(NUMATTACKS):
+				soln_q[tau][a] = q[tau, a].X
+
+		for tau in range(NUMTYPES):
+			soln_v_a[tau] = v_a[tau].X
+	except AttributeError:
+		print("Gurobi again")
+		print(m.status)
+		print(game_def_qval)
+		print(game_att_qval)
+		exit()
+
 
 	return soln_x, soln_q, m.objVal, soln_v_a
 

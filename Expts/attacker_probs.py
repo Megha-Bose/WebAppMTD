@@ -318,11 +318,13 @@ def getAttackProbsResponse(def_util, att_util, strat, P, vulset, att_hit_count, 
 		if(att_util[tau, a] > 0):
 			att_probs[a] = 1
 			count += 1
-	att_probs = att_probs/count
+	for a in range(NUMATTACKS):
+		att_probs[a] = att_probs[a]/count
+	# att_probs = att_probs/count
 
 	if np.sum(att_hit_count[tau]) != 0:
 		for a in range(NUMATTACKS):
-			att_probs[a] = att_hit_count[a] / np.sum(att_hit_count)
+			att_probs[a] = att_hit_count[tau][a] / np.sum(att_hit_count[tau])
 
 	y = rng.random()
 	attack = NUMATTACKS - 1
@@ -342,7 +344,7 @@ def getAttackProbsResponse(def_util, att_util, strat, P, vulset, att_hit_count, 
 	for a in range(NUMATTACKS):
 		for tauprime in range(NUMTYPES):
 			if((vulset[strat, a] == 1) & (att_util[tau, a] > 0)):
-				att_hit_count[tauprime, a]+=1
+				att_hit_count[tauprime][a]+=1
 
 	return util, tau, attack, att_hit_count
 

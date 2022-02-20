@@ -72,7 +72,7 @@ def getSSEqMIQP(s, game_def_qval, game_att_qval, NUMCONFIGS, NUMATTACKS, NUMTYPE
 				for sdash in range(NUMCONFIGS):
 					val.add(float(game_att_qval_copy[tau][s][sdash][a]) * x[sdash], -1.0)
 				m.addConstr(val >= 0)
-				m.addConstr(val <= (1.001 - q[tau, a]) * 100)
+				m.addConstr(val <= (1.00000001 - q[tau, a]) * 100)
 
 		m.update()
 
